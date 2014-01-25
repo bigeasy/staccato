@@ -2,7 +2,7 @@
     "name":             "transcript",
     "version":          "9.9.9",
     "author":           "Alan Gutierrez <alan@prettyrobots.com>",
-    "description":      "Description.",
+    "description":      "Durable logging for Strata database pages.",
     "url":              "http://bigeasy.github.com/transcript",
     "keywords":
     [
