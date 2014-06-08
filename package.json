@@ -1,29 +1,28 @@
 {
-    "name":             "transcript",
-    "version":          "0.0.1",
+    "name":             "staccato",
+    "version":          "0.0.0",
     "author":           "Alan Gutierrez <alan@prettyrobots.com>",
-    "description":      "Durable logging for Strata database pages.",
+    "description":      "Write to a Node.js stream using the error-first callback style.",
     "keywords":
     [
-                        "btree", "leveldb", "levelup", "binary", "strata",
-                        "database", "json", "b-tree", "concurrent", "persistence"
+                        "streams", "callbacks", "control", "flow"
     ],
     "contributors":     [],
-    "homepage":         "https://github.com/bigeasy/transcript",
-    "bugs":             "https://github.com/bigeasy/transcript/issues",
+    "homepage":         "https://github.com/bigeasy/staccato",
+    "bugs":             "https://github.com/bigeasy/staccato/issues",
     "licenses":
     [{
                         "type": "MIT",
-                        "url": "http://github.com/bigeasy/transcript/raw/master/LICENSE"
+                        "url": "http://github.com/bigeasy/staccato/raw/master/LICENSE"
     }],
     "repository":
     {
                         "type": "git",
-                        "url": "http://github.com/bigeasy/transcript.git"
+                        "url": "http://github.com/bigeasy/staccato.git"
     },
     "dependencies":
     {
-                        "cadence":              "0.0.36"
+                        "cadence":          "0.0.36"
     },
     "devDependencies":
     {

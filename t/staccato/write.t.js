@@ -9,12 +9,12 @@ require('proof')(1, function (step) {
     }])
 }, function (step, ok) {
     var mkdirp = require('mkdirp'),
-        Transcript = require('../..'),
-        transcript
+        Staccato = require('../..'),
+        staccato
     step(function () {
         mkdirp(path.join(__dirname, 'tmp'), step())
     }, function () {
-        transcript = new Transcript(path.join(__dirname, 'tmp', 'transcript'), 'w', 0)
-        ok(transcript)
+        staccato = new Staccato(path.join(__dirname, 'tmp', 'staccato'), 'w', 0)
+        ok(staccato)
     })
 })

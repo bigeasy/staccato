@@ -1,7 +1,7 @@
 var fs = require('fs'),
     cadence = require('cadence')
 
-function Transcript (file, flags, position) {
+function Staccato (file, flags, position) {
     this._file = file
     this._position = position
     this._stream = fs.createWriteStream(this._file, {
@@ -13,7 +13,7 @@ function Transcript (file, flags, position) {
     }.bind(this))
 }
 
-Transcript.prototype.ready = cadence(function (step) {
+Staccato.prototype.ready = cadence(function (step) {
     step(function () {
         if (!this._opened) {
             this._stream.once('open', step(-1))
@@ -27,7 +27,7 @@ Transcript.prototype.ready = cadence(function (step) {
     })
 })
 
-Transcript.prototype._checkError = function () {
+Staccato.prototype._checkError = function () {
     if (this._error) {
         var error = this._error
         this._error = new Error('already errored')
@@ -35,7 +35,7 @@ Transcript.prototype._checkError = function () {
     }
 }
 
-Transcript.prototype.write = cadence(function (step, buffer) {
+Staccato.prototype.write = cadence(function (step, buffer) {
     this._checkError()
     if (!this._stream.write(buffer)) { // <- does this 'error' if `true`?
         step(function () {
@@ -47,7 +47,7 @@ Transcript.prototype.write = cadence(function (step, buffer) {
     }
 })
 
-Transcript.prototype.close = cadence(function (step) {
+Staccato.prototype.close = cadence(function (step) {
     step(function () {
         this._checkError() // <- would `error` be here?
         this._stream.removeAllListeners('error')
@@ -59,4 +59,4 @@ Transcript.prototype.close = cadence(function (step) {
     })
 })
 
-module.exports = Transcript
+module.exports = Staccato
