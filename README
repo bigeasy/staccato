@@ -1,6 +1,6 @@
 Staccato
 
-Durable logging for Strata database pages.
+Write to a Node.js stream using the error-first callback style.
 
     Discussion:     http://bigeasy.github.io/staccato/issues/1
 
