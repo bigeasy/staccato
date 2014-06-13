@@ -16,5 +16,8 @@ require('proof')(1, function (step) {
     }, function () {
         staccato = new Staccato(path.join(__dirname, 'tmp', 'staccato'), 'w', 0)
         ok(staccato)
+        staccato.ready(step())
+    }, function () {
+        staccato.close(step())
     })
 })
