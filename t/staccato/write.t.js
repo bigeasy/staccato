@@ -1,4 +1,15 @@
-var path = require('path')
+var path = require('path'),
+    stream = require('stream')
+
+function createWritable (write, highWaterMark) {
+    var writable = new stream.Writable({ highWaterMark: highWaterMark || 1024 * 16 })
+    writable._write = write
+    return writable
+}
+
+function write (chunk, encoding, callback) {
+    callback()
+}
 
 require('proof')(1, function (step) {
     var rimraf = require('rimraf')
@@ -14,9 +25,11 @@ require('proof')(1, function (step) {
     step(function () {
         mkdirp(path.join(__dirname, 'tmp'), step())
     }, function () {
-        staccato = new Staccato(path.join(__dirname, 'tmp', 'staccato'), 'w', 0)
-        ok(staccato)
+        staccato = new Staccato(createWritable(write), false)
+        ok(staccato, 'create')
         staccato.ready(step())
+    }, function () {
+        staccato.write(new Buffer(1024), step())
     }, function () {
         staccato.close(step())
     })
