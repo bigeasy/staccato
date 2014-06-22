@@ -34,9 +34,13 @@ require('proof')(2, function (step) {
         staccato.close(step())
     }, function () {
         var writable
-        staccato = new Staccato(writable = createWritable(write), true)
+        staccato = new Staccato(writable = createWritable(write, 1), true)
         staccato.ready(step())
         writable.emit('open')
+    }, function () {
+        staccato.write(new Buffer(1024), step())
+    }, function () {
+        staccato.write(new Buffer(1024), step())
     }, function () {
         ok(1, 'opened')
         staccato.close(step())
