@@ -11,7 +11,7 @@ function write (chunk, encoding, callback) {
     callback()
 }
 
-require('proof')(1, function (step) {
+require('proof')(2, function (step) {
     var rimraf = require('rimraf')
     step([function () {
         rimraf(path.join(__dirname, 'tmp'), step())
@@ -31,6 +31,14 @@ require('proof')(1, function (step) {
     }, function () {
         staccato.write(new Buffer(1024), step())
     }, function () {
+        staccato.close(step())
+    }, function () {
+        var writable
+        staccato = new Staccato(writable = createWritable(write), true)
+        staccato.ready(step())
+        writable.emit('open')
+    }, function () {
+        ok(1, 'opened')
         staccato.close(step())
     })
 })
