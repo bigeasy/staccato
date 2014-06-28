@@ -11,14 +11,14 @@ function write (chunk, encoding, callback) {
     callback()
 }
 
-require('proof')(2, function (step) {
+require('proof')(3, function (step) {
     var rimraf = require('rimraf')
     step([function () {
         rimraf(path.join(__dirname, 'tmp'), step())
     }, function (_, error) {
         if (error.code != "ENOENT") throw error
     }])
-}, function (step, ok) {
+}, function (step, assert) {
     var mkdirp = require('mkdirp'),
         Staccato = require('../..'),
         staccato
@@ -26,7 +26,7 @@ require('proof')(2, function (step) {
         mkdirp(path.join(__dirname, 'tmp'), step())
     }, function () {
         staccato = new Staccato(createWritable(write), false)
-        ok(staccato, 'create')
+        assert(staccato, 'create')
         staccato.ready(step())
     }, function () {
         staccato.write(new Buffer(1024), step())
@@ -42,7 +42,14 @@ require('proof')(2, function (step) {
     }, function () {
         staccato.write(new Buffer(1024), step())
     }, function () {
-        ok(1, 'opened')
+        assert(1, 'opened and drained')
         staccato.close(step())
-    })
+    }, [function () {
+        var writable
+        staccato = new Staccato(writable = createWritable(write, 1), true)
+        writable.emit('error', new Error('foo'))
+        staccato.ready(step())
+    }, function (_, error) {
+        assert(error.message, 'foo', 'error caught')
+    }])
 })
