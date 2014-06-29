@@ -1,19 +1,5 @@
-var fs = require('fs'),
-    stream = require('stream'),
+var stream = require('stream'),
     cadence = require('cadence')
-
-
-/*function Staccato (file, flags, position) {
-    this._file = file
-    this._position = position
-    this._stream = fs.createWriteStream(this._file, {
-        flags: flags,
-        mode: 0644,
-        start: this._position
-    }).once('open', function (error) {
-        this._opened = true
-    }.bind(this))
-}*/
 
 function Staccato (stream, opening) {
     this._opened = !opening
