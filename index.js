@@ -18,7 +18,7 @@ Staccato.prototype.ready = cadence(function (step) {
         var error
         step(function () {
             this._stream.removeListener('error', this._catcher)
-            this._stream.once('open', step(-1))
+            this._stream.once('open', step(null))
             this._stream.once('error', error = step(Error))
         }, function () {
             this._stream.removeListener('error', error)
@@ -40,7 +40,7 @@ Staccato.prototype.write = cadence(function (step, buffer) {
         var error
         step(function () {
             this._stream.removeListener('error', this._catcher)
-            this._stream.once('drain', step(-1))
+            this._stream.once('drain', step(null))
             this._stream.once('error', error = step(Error))
         }, function () {
             this._stream.removeListener('error', error)
