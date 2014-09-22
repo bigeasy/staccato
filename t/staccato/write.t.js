@@ -1,5 +1,5 @@
-var path = require('path'),
-    stream = require('stream')
+var path = require('path'), stream = require('stream'),
+    proof = require('proof'), cadence = require('cadence')
 
 function createWritable (write, highWaterMark) {
     var writable = new stream.Writable({ highWaterMark: highWaterMark || 1024 * 16 })
@@ -11,18 +11,21 @@ function write (chunk, encoding, callback) {
     callback()
 }
 
-require('proof')(3, function (step) {
-    var rimraf = require('rimraf')
-    step([function () {
-        rimraf(path.join(__dirname, 'tmp'), step())
-    }, function (_, error) {
-        if (error.code != "ENOENT") throw error
-    }])
-}, function (step, assert) {
+proof(3, cadence(function (step, assert) {
     var mkdirp = require('mkdirp'),
         Staccato = require('../..'),
         staccato
+    var cleanup = cadence(function (step) {
+        var rimraf = require('rimraf')
+        step([function () {
+            rimraf(path.join(__dirname, 'tmp'), step())
+        }, function (_, error) {
+            if (error.code != "ENOENT") throw error
+        }])
+    })
     step(function () {
+        cleanup(step())
+    }, function () {
         mkdirp(path.join(__dirname, 'tmp'), step())
     }, function () {
         staccato = new Staccato(createWritable(write), false)
@@ -51,5 +54,9 @@ require('proof')(3, function (step) {
         staccato.ready(step())
     }, function (_, error) {
         assert(error.message, 'foo', 'error caught')
-    }])
-})
+    }], function () {
+        if (!('UNTIDY' in process.env)) {
+            cleanup(step())
+        }
+    })
+}))

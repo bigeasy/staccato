@@ -8,6 +8,7 @@ Set an error handler on the stream from the start. Only remove it when you're li
 
 ### Issue by Issue
 
+ * Upgrade Proof to 0.0.49. #28.
  * Implement event handlers using event extension. #26.
  * Always listen for errors. #25.
  * Upgrade Cadence to 0.0.42. #24.
