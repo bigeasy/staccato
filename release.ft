@@ -1,3 +1,7 @@
+### Use Cadence Event Extension
+
+Use the new event extension for Cadence to simplify the expression of the event handling.
+
 ### Always Listen for Errors
 
 Set an error handler on the stream from the start. Only remove it when you're listening for a specific `"open"`, `"drain"` or `"end"` event.
