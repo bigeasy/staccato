@@ -1,3 +1,8 @@
+### Always Listen for Errors
+
+Set an error handler on the stream from the start. Only remove it when you're listening for a specific `"open"`, `"drain"` or `"end"` event.
+
 ### Issue by Issue
 
+ * Always listen for errors. #25.
  * Upgrade Cadence to 0.0.42. #24.

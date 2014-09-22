@@ -8,8 +8,9 @@ function Staccato (stream, opening) {
     if (!this._opened) {
         this._stream.once('open', function () {
             this._opened = true
-        }.bind(this)).once('error', this._catcher)
+        }.bind(this))
     }
+    this._stream.once('error', this._catcher)
 }
 
 Staccato.prototype.ready = cadence(function (step) {
@@ -22,6 +23,7 @@ Staccato.prototype.ready = cadence(function (step) {
             this._stream.once('error', error = step(Error))
         }, function () {
             this._stream.removeListener('error', error)
+            this._stream.once('error', this._catcher)
         })
     }
 })
