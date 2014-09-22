@@ -1,5 +1,6 @@
 var stream = require('stream'),
-    cadence = require('cadence')
+    cadence = require('cadence'),
+    ev = require('cadence/event')
 
 function Staccato (stream, opening) {
     this._opened = !opening
@@ -16,13 +17,10 @@ function Staccato (stream, opening) {
 Staccato.prototype.ready = cadence(function (step) {
     this._checkError()
     if (!this._opened) {
-        var error
         step(function () {
             this._stream.removeListener('error', this._catcher)
-            this._stream.once('open', step(null))
-            this._stream.once('error', error = step(Error))
+            step(ev, this._stream).on('open').on(Error)
         }, function () {
-            this._stream.removeListener('error', error)
             this._stream.once('error', this._catcher)
         })
     }
@@ -39,13 +37,10 @@ Staccato.prototype._checkError = function () {
 Staccato.prototype.write = cadence(function (step, buffer) {
     this._checkError()
     if (!this._stream.write(buffer)) { // <- does this 'error' if `true`?
-        var error
         step(function () {
             this._stream.removeListener('error', this._catcher)
-            this._stream.once('drain', step(null))
-            this._stream.once('error', error = step(Error))
+            step(ev, this._stream).on('drain').on(Error)
         }, function () {
-            this._stream.removeListener('error', error)
             this._stream.once('error', this._catcher)
         })
     }
@@ -53,13 +48,11 @@ Staccato.prototype.write = cadence(function (step, buffer) {
 
 Staccato.prototype.close = cadence(function (step) {
     this._checkError() // <- would `error` be here?
-    var error
     step(function () {
         this._stream.removeListener('error', this._catcher)
-        this._stream.end(step())
-        this._stream.once('error', error = step(Error)) // <- will this called?
+        step(ev, this._stream).on('finish').on(Error)
+        this._stream.end()
     }, function () {
-        this._stream.removeListener('error', error)
         this._error = new Error('closed')
     })
 })
