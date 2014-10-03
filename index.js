@@ -5,7 +5,12 @@ var stream = require('stream'),
 function Staccato (stream, opening) {
     this._opened = !opening
     this._stream = stream
-    this._catcher = function (error) { this._error = error }.bind(this)
+    this._catcher = function (error) {
+        this._error = error
+        if (this._write) {
+            this._write()
+        }
+    }.bind(this)
     if (!this._opened) {
         this._stream.once('open', function () {
             this._opened = true
@@ -35,15 +40,22 @@ Staccato.prototype._checkError = function () {
 }
 
 Staccato.prototype.write = cadence(function (step, buffer) {
-    this._checkError()
-    if (!this._stream.write(buffer)) { // <- does this 'error' if `true`?
-        step(function () {
-            this._stream.removeListener('error', this._catcher)
-            step(ev, this._stream).on('drain').on(Error)
-        }, function () {
-            this._stream.once('error', this._catcher)
-        })
-    }
+    step(function () {
+        this._checkError()
+        if (this._drain) {
+            this._write = step()
+        }
+    }, function () {
+        this._checkError()
+        if (!this._stream.write(buffer)) { // <- does this 'error' if `true`?
+            this._stream.once('drain', this._drain = function () {
+                this._drain = null
+                if (this._write) {
+                    this._write()
+                }
+            }.bind(this))
+        }
+    })
 })
 
 Staccato.prototype.close = cadence(function (step) {
