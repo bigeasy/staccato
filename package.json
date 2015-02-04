@@ -20,6 +20,7 @@
                         "type": "git",
                         "url": "http://github.com/bigeasy/staccato.git"
     },
+    "main":             "staccato",
     "dependencies":
     {
                         "cadence":          "0.0.43"
