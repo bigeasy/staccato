@@ -11,52 +11,52 @@ function write (chunk, encoding, callback) {
     callback()
 }
 
-proof(3, cadence(function (step, assert) {
+proof(3, cadence(function (async, assert) {
     var mkdirp = require('mkdirp'),
         Staccato = require('../..'),
         staccato
-    var cleanup = cadence(function (step) {
+    var cleanup = cadence(function (async) {
         var rimraf = require('rimraf')
-        step([function () {
-            rimraf(path.join(__dirname, 'tmp'), step())
+        async([function () {
+            rimraf(path.join(__dirname, 'tmp'), async())
         }, function (_, error) {
             if (error.code != "ENOENT") throw error
         }])
     })
-    step(function () {
-        cleanup(step())
+    async(function () {
+        cleanup(async())
     }, function () {
-        mkdirp(path.join(__dirname, 'tmp'), step())
+        mkdirp(path.join(__dirname, 'tmp'), async())
     }, function () {
         staccato = new Staccato(createWritable(write), false)
         assert(staccato, 'create')
-        staccato.ready(step())
+        staccato.ready(async())
     }, function () {
-        staccato.write(new Buffer(1024), step())
+        staccato.write(new Buffer(1024), async())
     }, function () {
-        staccato.close(step())
+        staccato.close(async())
     }, function () {
         var writable
         staccato = new Staccato(writable = createWritable(write, 1), true)
-        staccato.ready(step())
+        staccato.ready(async())
         writable.emit('open')
     }, function () {
-        staccato.write(new Buffer(1024), step())
+        staccato.write(new Buffer(1024), async())
     }, function () {
-        staccato.write(new Buffer(1024), step())
+        staccato.write(new Buffer(1024), async())
     }, function () {
         assert(1, 'opened and drained')
-        staccato.close(step())
+        staccato.close(async())
     }, [function () {
         var writable
         staccato = new Staccato(writable = createWritable(write, 1), true)
         writable.emit('error', new Error('foo'))
-        staccato.ready(step())
+        staccato.ready(async())
     }, function (_, error) {
         assert(error.message, 'foo', 'error caught')
     }], function () {
         if (!('UNTIDY' in process.env)) {
-            cleanup(step())
+            cleanup(async())
         }
     })
 }))
