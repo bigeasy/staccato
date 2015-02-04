@@ -1,5 +1,5 @@
 var path = require('path'), stream = require('stream'),
-    proof = require('proof'), cadence = require('cadence')
+    proof = require('proof'), cadence = require('cadence/redux')
 
 function createWritable (write, highWaterMark) {
     var writable = new stream.Writable({ highWaterMark: highWaterMark || 1024 * 16 })
@@ -11,7 +11,9 @@ function write (chunk, encoding, callback) {
     callback()
 }
 
-proof(3, cadence(function (async, assert) {
+proof(3, cadence(prove))
+
+function prove (async, assert) {
     var mkdirp = require('mkdirp'),
         Staccato = require('../..'),
         staccato
@@ -52,11 +54,11 @@ proof(3, cadence(function (async, assert) {
         staccato = new Staccato(writable = createWritable(write, 1), true)
         writable.emit('error', new Error('foo'))
         staccato.ready(async())
-    }, function (_, error) {
+    }, function (error) {
         assert(error.message, 'foo', 'error caught')
     }], function () {
         if (!('UNTIDY' in process.env)) {
             cleanup(async())
         }
     })
-}))
+}
