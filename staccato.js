@@ -1,7 +1,5 @@
 var stream = require('stream'),
-    cadence = require('cadence/redux')
-
-require('cadence/ee')
+    cadence = require('cadence')
 
 function Staccato (stream, opening) {
     this._opened = !opening
