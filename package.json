@@ -25,7 +25,7 @@
     {
                         "proof":            "0.0.53",
                         "mkdirp":           "0.5.1",
-                        "rimraf":           "2.2.8"
+                        "rimraf":           "2.4.2"
     },
     "scripts":
     {
