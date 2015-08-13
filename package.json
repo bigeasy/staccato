@@ -1,6 +1,6 @@
 {
     "name":             "staccato",
-    "version":          "0.0.7",
+    "version":          "0.0.8",
     "author":           "Alan Gutierrez <alan@prettyrobots.com>",
     "description":      "Write to a Node.js stream using the error-first callback style.",
     "keywords":
