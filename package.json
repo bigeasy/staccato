@@ -23,7 +23,7 @@
     },
     "devDependencies":
     {
-                        "proof":            "0.0.54",
+                        "proof":            "0.0.56",
                         "mkdirp":           "0.5.1",
                         "rimraf":           "2.4.2"
     },
