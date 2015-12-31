@@ -19,7 +19,7 @@
     "main":             "staccato",
     "dependencies":
     {
-                        "cadence":          "0.4.1",
+                        "cadence":          "0.4.3",
                         "delta":            "0.0.4"
     },
     "devDependencies":
