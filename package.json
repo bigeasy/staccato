@@ -20,7 +20,7 @@
     "dependencies":
     {
                         "cadence":          "0.4.3",
-                        "delta":            "0.0.4"
+                        "delta":            "1.0.x"
     },
     "devDependencies":
     {
