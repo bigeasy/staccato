@@ -1,35 +1,37 @@
 {
-    "name":             "staccato",
-    "version":          "1.0.1",
-    "author":           "Alan Gutierrez <alan@prettyrobots.com>",
-    "description":      "Write to a Node.js stream using the error-first callback style.",
+    "name":                 "staccato",
+    "version":              "1.0.1",
+    "author":               "Alan Gutierrez <alan@prettyrobots.com>",
+    "description":
+
+      "Write to a Node.js stream using the error-first callback style.",
+
     "keywords":
     [
-                        "streams", "callbacks", "control", "flow"
+                            "streams", "callbacks", "control", "flow"
     ],
-    "contributors":     [],
-    "homepage":         "https://github.com/bigeasy/staccato",
-    "bugs":             "https://github.com/bigeasy/staccato/issues",
-    "license":          "MIT",
+    "homepage":             "https://github.com/bigeasy/staccato",
+    "bugs":                 "https://github.com/bigeasy/staccato/issues",
+    "license":              "MIT",
     "repository":
     {
-                        "type": "git",
-                        "url": "http://github.com/bigeasy/staccato.git"
+                            "type": "git",
+                            "url": "http://github.com/bigeasy/staccato.git"
     },
-    "main":             "staccato",
+    "main":                 "staccato",
     "dependencies":
     {
-                        "cadence":          "1.x",
-                        "delta":            "1.x"
+                            "cadence":                      "1.x",
+                            "delta":                        "1.x"
     },
     "devDependencies":
     {
-                        "proof":            "1.x",
-                        "mkdirp":           "0.5.1",
-                        "rimraf":           "2.5.2"
+                            "proof":                        "1.x",
+                            "mkdirp":                       "0.5.1",
+                            "rimraf":                       "2.5.2"
     },
     "scripts":
     {
-                        "test": "proof platform win32 && proof test */*/*.t.js || t/test"
+                            "test": "proof platform win32 && proof test */*/*.t.js || t/test"
     }
 }
