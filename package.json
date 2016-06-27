@@ -1,7 +1,6 @@
 {
     "name":                 "staccato",
     "version":              "1.0.1",
-    "author":               "Alan Gutierrez <alan@prettyrobots.com>",
     "description":
 
       "Write to a Node.js stream using the error-first callback style.",
@@ -10,6 +9,7 @@
     [
                             "streams", "callbacks", "control", "flow"
     ],
+    "author":               "Alan Gutierrez <alan@prettyrobots.com>",
     "homepage":             "https://github.com/bigeasy/staccato",
     "bugs":                 "https://github.com/bigeasy/staccato/issues",
     "license":              "MIT",
