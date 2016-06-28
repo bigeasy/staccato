@@ -4,8 +4,10 @@ var stream = require('stream'),
 
 function Staccato (stream, opening) {
     this._opened = !opening
+// TODO Expose stream.
     this._stream = stream
     this._catcher = function (error) { this._error = error }.bind(this)
+    this._readable = false
     if (!this._opened) {
         this._stream.once('open', function () {
             this._opened = true
@@ -33,6 +35,28 @@ Staccato.prototype._checkError = function () {
         throw error
     }
 }
+
+Staccato.prototype.read = cadence(function (async) {
+    var waited = false
+    var loop = async(function () {
+        if (!this._readable) {
+            waited = true
+            new Delta(async()).ee(this._stream).on('readable')
+        }
+    }, function () {
+        this._readable = true
+        var object = this._stream.read()
+        if (object == null) {
+            if (waited) {
+                return [ loop.break, null ]
+            } else {
+                this._readable = false
+            }
+        } else {
+            return [ loop.break, object ]
+        }
+    })()
+})
 
 Staccato.prototype.write = cadence(function (async, buffer) {
     this._checkError()
