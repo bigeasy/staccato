@@ -1,6 +1,6 @@
-var stream = require('stream'),
-    cadence = require('cadence'),
-    Delta = require('delta')
+var stream = require('stream')
+var cadence = require('cadence')
+var delta = require('delta')
 
 function Staccato (stream, opening) {
     this._opened = !opening
@@ -21,7 +21,7 @@ Staccato.prototype.ready = cadence(function (async) {
     if (!this._opened) {
         async(function () {
             this.stream.removeListener('error', this._catcher)
-            new Delta(async()).ee(this.stream).on('open')
+            delta(async()).ee(this.stream).on('open')
         }, function () {
             this.stream.once('error', this._catcher)
         })
@@ -41,7 +41,7 @@ Staccato.prototype.read = cadence(function (async) {
     var loop = async(function () {
         if (!this._readable) {
             waited = true
-            new Delta(async()).ee(this.stream).on('readable')
+            delta(async()).ee(this.stream).on('readable')
         }
     }, function () {
         this._readable = true
@@ -63,7 +63,7 @@ Staccato.prototype.write = cadence(function (async, buffer) {
     if (!this.stream.write(buffer)) { // <- does this 'error' if `true`?
         async(function () {
             this.stream.removeListener('error', this._catcher)
-            new Delta(async()).ee(this.stream).on('drain')
+            delta(async()).ee(this.stream).on('drain')
         }, function () {
             this.stream.once('error', this._catcher)
         })
@@ -74,7 +74,7 @@ Staccato.prototype.close = cadence(function (async) {
     this._checkError() // <- would `error` be here?
     async(function () {
         this.stream.removeListener('error', this._catcher)
-        new Delta(async()).ee(this.stream).on('finish')
+        delta(async()).ee(this.stream).on('finish')
         this.stream.end()
     }, function () {
         this._error = new Error('closed')
