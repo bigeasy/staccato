@@ -18,7 +18,6 @@
                             "type": "git",
                             "url": "http://github.com/bigeasy/staccato.git"
     },
-    "main":                 "staccato",
     "dependencies":
     {
                             "cadence":                      "1.0.x",
@@ -26,10 +25,11 @@
     },
     "devDependencies":
     {
-                            "proof":                        "1.0.x",
                             "mkdirp":                       "0.5.1",
+                            "proof":                        "1.0.x",
                             "rimraf":                       "2.5.2"
     },
+    "main":                 "staccato",
     "scripts":
     {
                             "test": "proof platform win32 && proof test */*.t.js || t/test"
