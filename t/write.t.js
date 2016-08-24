@@ -1,5 +1,5 @@
 var path = require('path'), stream = require('stream'),
-    proof = require('proof'), cadence = require('cadence')
+    proof = require('proof/redux'), cadence = require('cadence')
 
 function createWritable (write, highWaterMark) {
     var writable = new stream.Writable({ highWaterMark: highWaterMark || 1024 * 16 })
