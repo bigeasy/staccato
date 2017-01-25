@@ -1,2 +1,2 @@
-module.Readable = require('./readable')
-module.Writable = require('./writable')
+exports.Readable = require('./readable')
+exports.Writable = require('./writable')
