@@ -21,7 +21,9 @@
     "dependencies":
     {
                             "cadence":                      "1.0.x",
-                            "delta":                        "1.2.0-beta.0"
+                            "delta":                        "1.2.0-beta.0",
+                            "interrupt":                    "2.1.x",
+                            "nascent":                      "0.0.3"
     },
     "devDependencies":
     {

@@ -1,6 +1,8 @@
 var stream = require('stream')
 var cadence = require('cadence')
 var delta = require('delta')
+var Destructor = require('nascent/destructor')
+var interrupt = require('interrupt').createInterrupter('staccato')
 
 function Staccato (stream, opening) {
     this.destroyed = false
@@ -8,6 +10,8 @@ function Staccato (stream, opening) {
     this.stream = stream
     this._catcher = function (error) { this._error = error }.bind(this)
     this._delta = null
+    this._end = this._streamEnd.bind(this)
+    this.stream.once('end', this._end)
     this._readable = false
     if (opening) {
         this.stream.once('open', this._onceOpen = function () {
@@ -15,6 +19,7 @@ function Staccato (stream, opening) {
         }.bind(this))
     }
     this.stream.once('error', this._catcher)
+    this._destructor = new Destructor(interrupt)
 }
 
 Staccato.prototype.destroy = function () {
@@ -48,6 +53,9 @@ Staccato.prototype._checkError = function () {
         this._error = new Error('already errored')
         throw error
     }
+}
+Staccato.prototype._streamEnd = function () {
+    this.destroy()
 }
 
 Staccato.prototype.read = cadence(function (async) {

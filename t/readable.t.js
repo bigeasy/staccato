@@ -2,6 +2,7 @@ require('proof/redux')(1, require('cadence')(prove))
 
 function prove (async, assert) {
     var Staccato = { Readable: require('../readable') }
+    var delta = require('delta')
     var stream = require('stream')
     var through = new stream.PassThrough
     var staccato = new Staccato.Readable(through)
@@ -24,5 +25,6 @@ function prove (async, assert) {
     }, function () {
         through.write(new Buffer('a'))
         through.end()
+        delta(async()).ee(through).on('end')
     })
 }
