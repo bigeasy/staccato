@@ -1,13 +1,13 @@
 var stream = require('stream')
+var util = require('util')
 var cadence = require('cadence')
 var delta = require('delta')
 var Destructor = require('nascent.destructor')
 var interrupt = require('interrupt').createInterrupter('staccato')
+var Staccato = require('./staccato.base.js')
 
-function Staccato (stream, opening) {
-    this.destroyed = false
-    this._onceOpen = null
-    this.stream = stream
+function Readable (stream, opening) {
+    Staccato.call(this, stream, opening)
     this._catcher = function (error) { this._error = error }.bind(this)
     this._delta = null
     this._end = this._streamEnd.bind(this)
@@ -21,44 +21,13 @@ function Staccato (stream, opening) {
     this.stream.once('error', this._catcher)
     this._destructor = new Destructor(interrupt)
 }
+util.inherits(Readable, Staccato)
 
-Staccato.prototype.destroy = function () {
-    this.destroyed = true
-    if (this._onceOpen != null) {
-        this.stream.removeListener('open', this._onceOpen)
-    }
-    if (this._delta != null) {
-        this._delta.cancel([])
-    }
-    this.stream.removeListener('error', this._catcher)
-}
-
-Staccato.prototype.ready = cadence(function (async) {
-    this._checkError()
-    if (this._onceOpen != null) {
-        this.stream.removeListener('open', this._onceOpen)
-        async(function () {
-            this.stream.removeListener('error', this._catcher)
-            this._delta = delta(async()).ee(this.stream).on('open')
-        }, function () {
-            this._delta = null
-            this.stream.once('error', this._catcher)
-        })
-    }
-})
-
-Staccato.prototype._checkError = function () {
-    if (this._error) {
-        var error = this._error
-        this._error = new Error('already errored')
-        throw error
-    }
-}
-Staccato.prototype._streamEnd = function () {
+Readable.prototype._streamEnd = function () {
     this.destroy()
 }
 
-Staccato.prototype.read = cadence(function (async) {
+Readable.prototype.read = cadence(function (async) {
     var waited = false
     var loop = async(function () {
         if (!this._readable) {
@@ -84,27 +53,4 @@ Staccato.prototype.read = cadence(function (async) {
     })()
 })
 
-Staccato.prototype.write = cadence(function (async, buffer) {
-    this._checkError()
-    if (!this.stream.write(buffer)) { // <- does this 'error' if `true`?
-        async(function () {
-            this.stream.removeListener('error', this._catcher)
-            delta(async()).ee(this.stream).on('drain')
-        }, function () {
-            this.stream.once('error', this._catcher)
-        })
-    }
-})
-
-Staccato.prototype.close = cadence(function (async) {
-    this._checkError() // <- would `error` be here?
-    async(function () {
-        this.stream.removeListener('error', this._catcher)
-        delta(async()).ee(this.stream).on('finish')
-        this.stream.end()
-    }, function () {
-        this._error = new Error('closed')
-    })
-})
-
-module.exports = Staccato
+module.exports = Readable

@@ -19,7 +19,6 @@ function prove (async, assert) {
     }, function () {
         assert(Buffer.concat(gathered).toString(), 'a', 'gathered')
     })
-    // A sub-cadence because we have to wait for the loop above to start.
     async(function () {
         setImmediate(async())
     }, function () {

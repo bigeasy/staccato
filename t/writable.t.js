@@ -15,7 +15,7 @@ proof(4, cadence(prove))
 
 function prove (async, assert) {
     var mkdirp = require('mkdirp'),
-        Staccato = { Writable: require('..') },
+        Staccato = { Writable: require('../writable') },
         staccato
     var cleanup = cadence(function (async) {
         var rimraf = require('rimraf')
