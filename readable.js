@@ -8,23 +8,14 @@ var Staccato = require('./base.js')
 
 function Readable (stream, opening) {
     Staccato.call(this, stream, opening)
-    this._catcher = function (error) { this._error = error }.bind(this)
-    this._delta = null
-    this._end = this._streamEnd.bind(this)
-    this.stream.once('end', this._end)
-    this._readable = false
-    if (opening) {
-        this.stream.once('open', this._onceOpen = function () {
-            this._onceOpen = null
-        }.bind(this))
-    }
-    this.stream.once('error', this._catcher)
-    this._destructor = new Destructor(interrupt)
+    this.stream.once('end', this._listeners.error)
+    this._destructor.addJanitor('end', this._unend.bind(this))
+    this._readable = true
 }
 util.inherits(Readable, Staccato)
 
-Readable.prototype._streamEnd = function () {
-    this.destroy()
+Readable.prototype._unend = function () {
+    this.stream.removeListener('end', this._listeners.error)
 }
 
 Readable.prototype.read = cadence(function (async) {
@@ -33,9 +24,13 @@ Readable.prototype.read = cadence(function (async) {
         if (!this._readable) {
             waited = true
             this._delta = delta(async()).ee(this.stream).on('readable')
+            this._destructor.addJanitor('delta', this._janitors.delta)
         }
     }, function () {
-        this._delta = null
+        if (!this._readable) {
+            this._delta = null
+            this._destructor.invokeJanitor('delta')
+        }
         if (this.destroyed) {
             return [ loop.break, null ]
         }

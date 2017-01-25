@@ -55,7 +55,8 @@ function prove (async, assert) {
         writable.emit('error', new Error('foo'))
         staccato.ready(async())
     }, function (error) {
-        assert(error.message, 'foo', 'error caught')
+        console.log(error.stack)
+        assert(/^staccato#destroyed$/m.test(error.message), 'error caught')
     }], function () {
         staccato = new Staccato.Writable(createWritable(write, 1), true)
         staccato.destroy()

@@ -7,21 +7,27 @@ var interrupt = require('interrupt').createInterrupter('staccato')
 function Staccato (stream, opening) {
     this.stream = stream
     this._destructor = new Destructor(interrupt)
-    this._destructor.addJanitor('mark', { object: this, method: '_destroyed' })
-    this._delta = null
-    this._readable = false
-    // TODO Profile.
     this._listeners = {
         open: this._open.bind(this),
         error: this._destructor.destroy.bind(this._destructor)
     }
+    this._janitors = {
+        open: { object: this, method: '_open' },
+        error: { object: this, method: '_uncatch' },
+        destroyed: { object: this, method: '_destroyed' },
+        delta: { object: this, method: '_cancel' },
+    }
+    this._destructor.addJanitor('mark', { object: this, method: '_destroyed' })
+    this._delta = null
+    this._readable = false
     if (opening) {
-        this._destructor.addJanitor('open', { object: this, method: '_open' })
+        this._destructor.addJanitor('open', this._janitors.open)
     } else {
         this._open()
     }
     this.stream.once('error', this._listeners.error)
-    this._destructor.addJanitor('error', { object: this, method: '_uncatch' })
+    this._destructor.addJanitor('error', this._janitors.error)
+    this.destroyed = false
 }
 
 Staccato.prototype._destroyed = function () {
@@ -37,40 +43,32 @@ Staccato.prototype._uncatch = function () {
     this.stream.removeListener('open', this._listeners.error)
 }
 
-Staccato.prototype.destroy = function () {
-    this._destructor.destroy()
-    this.destroyed = true
-    if (this._onceOpen != null) {
-        this.stream.removeListener('open', this._onceOpen)
-    }
+Staccato.prototype._cancel = function () {
     if (this._delta != null) {
         this._delta.cancel([])
+        this._delta = null
     }
-    this.stream.removeListener('error', this._catcher)
+}
+
+Staccato.prototype.destroy = function () {
+    this._destructor.destroy()
 }
 
 Staccato.prototype.ready = cadence(function (async) {
-    this._checkError()
-    if (this._onceOpen != null) {
+    this._destructor.check()
+    if (!this._opened) {
         async(function () {
-            console.log('here')
             this._destructor.invokeJanitor('open')
             this._destructor.invokeJanitor('error')
+            this._destructor.addJanitor('delta', this._janitors.delta)
             this._delta = delta(async()).ee(this.stream).on('open')
         }, function () {
             this._delta = null
-            this.stream.once('error', this._catch)
-            this._destructor.addJanitor('error', this, '_uncatch')
+            this._destructor.invokeJanitor('delta')
+            this.stream.once('error', this._listeners.error)
+            this._destructor.addJanitor('error', this._janitors.error)
         })
     }
 })
-
-Staccato.prototype._checkError = function () {
-    if (this._error) {
-        var error = this._error
-        this._error = new Error('already errored')
-        throw error
-    }
-}
 
 module.exports = Staccato
