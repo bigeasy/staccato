@@ -21,7 +21,7 @@ function prove (async, assert) {
         var rimraf = require('rimraf')
         async([function () {
             rimraf(path.join(__dirname, 'tmp'), async())
-        }, function (_, error) {
+        }, function (error) {
             if (error.code != "ENOENT") throw error
         }])
     })
