@@ -4,7 +4,7 @@ var cadence = require('cadence')
 var delta = require('delta')
 var Destructor = require('nascent.destructor')
 var interrupt = require('interrupt').createInterrupter('staccato')
-var Staccato = require('./staccato.base.js')
+var Staccato = require('./base.js')
 
 function Readable (stream, opening) {
     Staccato.call(this, stream, opening)
