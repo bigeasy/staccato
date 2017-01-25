@@ -1,7 +1,7 @@
 var stream = require('stream')
 var cadence = require('cadence')
 var delta = require('delta')
-var Destructor = require('nascent/destructor')
+var Destructor = require('nascent.destructor')
 var interrupt = require('interrupt').createInterrupter('staccato')
 
 function Staccato (stream, opening) {

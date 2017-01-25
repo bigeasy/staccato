@@ -23,7 +23,7 @@
                             "cadence":                      "1.0.x",
                             "delta":                        "1.2.0-beta.0",
                             "interrupt":                    "2.1.x",
-                            "nascent.destructor":           "0.0.0"
+                            "nascent.destructor":           "0.0.1"
     },
     "devDependencies":
     {
