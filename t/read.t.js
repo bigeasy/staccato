@@ -1,10 +1,10 @@
 require('proof/redux')(1, require('cadence')(prove))
 
 function prove (async, assert) {
-    var Staccato = require('..')
+    var Staccato = { Readable: require('../readable') }
     var stream = require('stream')
     var through = new stream.PassThrough
-    var staccato = new Staccato(through)
+    var staccato = new Staccato.Readable(through)
     var gathered = []
     async(function () {
         var loop = async(function () {

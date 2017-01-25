@@ -15,7 +15,7 @@ proof(4, cadence(prove))
 
 function prove (async, assert) {
     var mkdirp = require('mkdirp'),
-        Staccato = require('..'),
+        Staccato = { Writable: require('..') },
         staccato
     var cleanup = cadence(function (async) {
         var rimraf = require('rimraf')
@@ -30,7 +30,7 @@ function prove (async, assert) {
     }, function () {
         mkdirp(path.join(__dirname, 'tmp'), async())
     }, function () {
-        staccato = new Staccato(createWritable(write), false)
+        staccato = new Staccato.Writable(createWritable(write), false)
         assert(staccato, 'create')
         staccato.ready(async())
     }, function () {
@@ -39,7 +39,7 @@ function prove (async, assert) {
         staccato.close(async())
     }, function () {
         var writable
-        staccato = new Staccato(writable = createWritable(write, 1), true)
+        staccato = new Staccato.Writable(writable = createWritable(write, 1), true)
         staccato.ready(async())
         writable.emit('open')
     }, function () {
@@ -51,13 +51,13 @@ function prove (async, assert) {
         staccato.close(async())
     }, [function () {
         var writable
-        staccato = new Staccato(writable = createWritable(write, 1), true)
+        staccato = new Staccato.Writable(writable = createWritable(write, 1), true)
         writable.emit('error', new Error('foo'))
         staccato.ready(async())
     }, function (error) {
         assert(error.message, 'foo', 'error caught')
     }], function () {
-        staccato = new Staccato(createWritable(write, 1), true)
+        staccato = new Staccato.Writable(createWritable(write, 1), true)
         staccato.destroy()
         assert(staccato.destroyed, 'destroyed')
     }, function () {
