@@ -11,7 +11,7 @@ function write (chunk, encoding, callback) {
     callback()
 }
 
-proof(3, cadence(prove))
+proof(4, cadence(prove))
 
 function prove (async, assert) {
     var mkdirp = require('mkdirp'),
@@ -57,6 +57,10 @@ function prove (async, assert) {
     }, function (error) {
         assert(error.message, 'foo', 'error caught')
     }], function () {
+        staccato = new Staccato(createWritable(write, 1), true)
+        staccato.destroy()
+        assert(staccato.destroyed, 'destroyed')
+    }, function () {
         if (!('UNTIDY' in process.env)) {
             cleanup(async())
         }

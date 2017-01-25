@@ -3,26 +3,40 @@ var cadence = require('cadence')
 var delta = require('delta')
 
 function Staccato (stream, opening) {
-    this._opened = !opening
-// TODO Expose stream.
+    this.destroyed = false
+    this._onceOpen = null
     this.stream = stream
     this._catcher = function (error) { this._error = error }.bind(this)
+    this._delta = null
     this._readable = false
-    if (!this._opened) {
-        this.stream.once('open', function () {
-            this._opened = true
+    if (opening) {
+        this.stream.once('open', this._onceOpen = function () {
+            this._onceOpen = null
         }.bind(this))
     }
     this.stream.once('error', this._catcher)
 }
 
+Staccato.prototype.destroy = function () {
+    this.destroyed = true
+    if (this._onceOpen != null) {
+        this.stream.removeListener('open', this._onceOpen)
+    }
+    if (this._delta != null) {
+        this._delta.cancel([])
+    }
+    this.stream.removeListener('error', this._catcher)
+}
+
 Staccato.prototype.ready = cadence(function (async) {
     this._checkError()
-    if (!this._opened) {
+    if (this._onceOpen != null) {
+        this.stream.removeListener('open', this._onceOpen)
         async(function () {
             this.stream.removeListener('error', this._catcher)
-            delta(async()).ee(this.stream).on('open')
+            this._delta = delta(async()).ee(this.stream).on('open')
         }, function () {
+            this._delta = null
             this.stream.once('error', this._catcher)
         })
     }
@@ -41,9 +55,13 @@ Staccato.prototype.read = cadence(function (async) {
     var loop = async(function () {
         if (!this._readable) {
             waited = true
-            delta(async()).ee(this.stream).on('readable')
+            this._delta = delta(async()).ee(this.stream).on('readable')
         }
     }, function () {
+        this._delta = null
+        if (this.destroyed) {
+            return [ loop.break, null ]
+        }
         this._readable = true
         var object = this.stream.read()
         if (object == null) {
