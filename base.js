@@ -1,7 +1,7 @@
 var stream = require('stream')
 var cadence = require('cadence')
 var delta = require('delta')
-var Destructor = require('nascent.destructor')
+var Destructor = require('destructible')
 var interrupt = require('interrupt').createInterrupter('staccato')
 
 function Staccato (stream, opening) {
@@ -17,16 +17,16 @@ function Staccato (stream, opening) {
         destroyed: { object: this, method: '_destroyed' },
         delta: { object: this, method: '_cancel' },
     }
-    this._destructor.addJanitor('mark', { object: this, method: '_destroyed' })
+    this._destructor.addDestructor('mark', { object: this, method: '_destroyed' })
     this._delta = null
     this._readable = false
     if (opening) {
-        this._destructor.addJanitor('open', this._janitors.open)
+        this._destructor.addDestructor('open', this._janitors.open)
     } else {
         this._open()
     }
     this.stream.once('error', this._listeners.error)
-    this._destructor.addJanitor('error', this._janitors.error)
+    this._destructor.addDestructor('error', this._janitors.error)
     this.destroyed = false
 }
 
@@ -58,15 +58,15 @@ Staccato.prototype.ready = cadence(function (async) {
     this._destructor.check()
     if (!this._opened) {
         async(function () {
-            this._destructor.invokeJanitor('open')
-            this._destructor.invokeJanitor('error')
-            this._destructor.addJanitor('delta', this._janitors.delta)
+            this._destructor.invokeDestructor('open')
+            this._destructor.invokeDestructor('error')
+            this._destructor.addDestructor('delta', this._janitors.delta)
             this._delta = delta(async()).ee(this.stream).on('open')
         }, function () {
             this._delta = null
-            this._destructor.invokeJanitor('delta')
+            this._destructor.invokeDestructor('delta')
             this.stream.once('error', this._listeners.error)
-            this._destructor.addJanitor('error', this._janitors.error)
+            this._destructor.addDestructor('error', this._janitors.error)
         })
     }
 })
