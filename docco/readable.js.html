@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>readable.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+
+
+                <a class="source" href="base.js.html">
+                  base.js
+                </a>
+
+
+                <a class="source" href="readable.js.html">
+                  readable.js
+                </a>
+
+
+                <a class="source" href="staccato.js.html">
+                  staccato.js
+                </a>
+
+
+                <a class="source" href="writable.js.html">
+                  writable.js
+                </a>
+
+            </div>
+          </div>
+        </li>
+      </ul>
+
+    <ul class="sections">
+
+          <li id="title">
+              <div class="annotation">
+                  <h1>readable.js</h1>
+              </div>
+          </li>
+
+
+
+        <li id="section-1">
+            <div class="annotation">
+
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+
+            </div>
+
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> stream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'stream'</span>)
+<span class="hljs-keyword">var</span> util = <span class="hljs-built_in">require</span>(<span class="hljs-string">'util'</span>)
+<span class="hljs-keyword">var</span> cadence = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cadence'</span>)
+<span class="hljs-keyword">var</span> delta = <span class="hljs-built_in">require</span>(<span class="hljs-string">'delta'</span>)
+<span class="hljs-keyword">var</span> interrupt = <span class="hljs-built_in">require</span>(<span class="hljs-string">'interrupt'</span>).createInterrupter(<span class="hljs-string">'staccato'</span>)
+<span class="hljs-keyword">var</span> Staccato = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./base.js'</span>)
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Readable</span> (<span class="hljs-params">stream, opening</span>) </span>{
+    Staccato.call(<span class="hljs-keyword">this</span>, stream, opening)
+    <span class="hljs-keyword">this</span>.stream.once(<span class="hljs-string">'end'</span>, <span class="hljs-keyword">this</span>._listeners.error)
+    <span class="hljs-keyword">this</span>._destructor.addDestructor(<span class="hljs-string">'end'</span>, <span class="hljs-keyword">this</span>._unend.bind(<span class="hljs-keyword">this</span>))
+    <span class="hljs-keyword">this</span>._readable = <span class="hljs-literal">true</span>
+}
+util.inherits(Readable, Staccato)
+
+Readable.prototype._unend = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">this</span>.stream.removeListener(<span class="hljs-string">'end'</span>, <span class="hljs-keyword">this</span>._listeners.error)
+}
+
+Readable.prototype.read = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async</span>) </span>{
+    <span class="hljs-keyword">var</span> waited = <span class="hljs-literal">false</span>
+    <span class="hljs-keyword">var</span> loop = <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>._readable) {
+            waited = <span class="hljs-literal">true</span>
+            <span class="hljs-keyword">this</span>._delta = delta(<span class="hljs-keyword">async</span>()).ee(<span class="hljs-keyword">this</span>.stream).on(<span class="hljs-string">'readable'</span>)
+            <span class="hljs-keyword">this</span>._destructor.addDestructor(<span class="hljs-string">'delta'</span>, <span class="hljs-keyword">this</span>._janitors.delta)
+        }
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>._readable) {
+            <span class="hljs-keyword">this</span>._delta = <span class="hljs-literal">null</span>
+            <span class="hljs-keyword">this</span>._destructor.invokeDestructor(<span class="hljs-string">'delta'</span>)
+        }
+        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.destroyed) {
+            <span class="hljs-keyword">return</span> [ loop.break, <span class="hljs-literal">null</span> ]
+        }
+        <span class="hljs-keyword">this</span>._readable = <span class="hljs-literal">true</span>
+        <span class="hljs-keyword">var</span> object = <span class="hljs-keyword">this</span>.stream.read()
+        <span class="hljs-keyword">if</span> (object == <span class="hljs-literal">null</span>) {
+            <span class="hljs-keyword">if</span> (waited) {
+                <span class="hljs-keyword">return</span> [ loop.break, <span class="hljs-literal">null</span> ]
+            } <span class="hljs-keyword">else</span> {
+                <span class="hljs-keyword">this</span>._readable = <span class="hljs-literal">false</span>
+            }
+        } <span class="hljs-keyword">else</span> {
+            <span class="hljs-keyword">return</span> [ loop.break, object ]
+        }
+    })()
+})
+
+<span class="hljs-built_in">module</span>.exports = Readable</pre></div></div>
+
+        </li>
+
+    </ul>
+  </div>
+</body>
+</html>
