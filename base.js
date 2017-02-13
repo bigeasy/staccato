@@ -40,7 +40,7 @@ Staccato.prototype._open = function () {
 }
 
 Staccato.prototype._uncatch = function () {
-    this.stream.removeListener('open', this._listeners.error)
+    this.stream.removeListener('error', this._listeners.error)
 }
 
 Staccato.prototype._cancel = function () {
