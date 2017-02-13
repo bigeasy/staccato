@@ -9,7 +9,7 @@ function Staccato (stream, opening) {
     this._destructor = new Destructor(interrupt)
     this._listeners = {
         open: this._open.bind(this),
-        error: this._destructor.destroy.bind(this._destructor)
+        error: this.destroy.bind(this)
     }
     this._janitors = {
         open: { object: this, method: '_open' },
