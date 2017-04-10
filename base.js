@@ -1,37 +1,27 @@
 var stream = require('stream')
 var cadence = require('cadence')
 var delta = require('delta')
-var Destructor = require('destructible')
+var Destructible = require('destructible')
 var interrupt = require('interrupt').createInterrupter('staccato')
 
 function Staccato (stream, opening) {
     this.stream = stream
-    this._destructor = new Destructor(interrupt)
+    this._destructible = new Destructible(interrupt)
     this._listeners = {
         open: this._open.bind(this),
         error: this.destroy.bind(this)
     }
-    this._janitors = {
-        open: { object: this, method: '_open' },
-        error: { object: this, method: '_uncatch' },
-        destroyed: { object: this, method: '_destroyed' },
-        delta: { object: this, method: '_cancel' },
-    }
-    this._destructor.addDestructor('mark', { object: this, method: '_destroyed' })
+    this._destructible.markDestroyed(this)
     this._delta = null
     this._readable = false
     if (opening) {
-        this._destructor.addDestructor('open', this._janitors.open)
+        this._destructible.addDestructor('open', this, '_open')
     } else {
         this._open()
     }
     this.stream.once('error', this._listeners.error)
-    this._destructor.addDestructor('error', this._janitors.error)
+    this._destructible.addDestructor('error', this, '_uncatch')
     this.destroyed = false
-}
-
-Staccato.prototype._destroyed = function () {
-    this.destroyed = true
 }
 
 Staccato.prototype._open = function () {
@@ -51,22 +41,22 @@ Staccato.prototype._cancel = function () {
 }
 
 Staccato.prototype.destroy = function () {
-    this._destructor.destroy()
+    this._destructible.destroy()
 }
 
 Staccato.prototype.ready = cadence(function (async) {
-    this._destructor.check()
+    interrupt.assert(!this.destroyed, 'destroyed')
     if (!this._opened) {
         async(function () {
-            this._destructor.invokeDestructor('open')
-            this._destructor.invokeDestructor('error')
-            this._destructor.addDestructor('delta', this._janitors.delta)
+            this._destructible.invokeDestructor('open')
+            this._destructible.invokeDestructor('error')
+            this._destructible.addDestructor('delta', this, '_cancel')
             this._delta = delta(async()).ee(this.stream).on('open')
         }, function () {
             this._delta = null
-            this._destructor.invokeDestructor('delta')
+            this._destructible.invokeDestructor('delta')
             this.stream.once('error', this._listeners.error)
-            this._destructor.addDestructor('error', this._janitors.error)
+            this._destructible.addDestructor('error', this, '_uncatch')
         })
     }
 })

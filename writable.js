@@ -11,32 +11,32 @@ function Writable (stream, opening) {
 util.inherits(Writable, Staccato)
 
 Writable.prototype.write = cadence(function (async, buffer) {
-    this._destructor.check()
+    interrupt.assert(!this.destroyed, 'destroyed')
     if (!this.stream.write(buffer)) { // <- does this 'error' if `true`?
         async(function () {
-            this._destructor.invokeDestructor('error')
-            this._destructor.addDestructor('delta', this._janitors.error)
+            this._destructible.invokeDestructor('error')
+            this._destructible.addDestructor('delta', this, '_cancel')
             this._delta = delta(async()).ee(this.stream).on('drain')
         }, function () {
             this._delta = null
-            this._destructor.invokeDestructor('delta')
+            this._destructible.invokeDestructor('delta')
             this.stream.once('error', this._listeners.error)
-            this._destructor.addDestructor('error', this._janitors.error)
+            this._destructible.addDestructor('error', this, '_uncatch')
         })
     }
 })
 
 Writable.prototype.close = cadence(function (async) {
-    this._destructor.check()
+    interrupt.assert(!this.destroyed, 'destroyed')
     async(function () {
-        this._destructor.invokeDestructor('error')
-        this._destructor.addDestructor('delta', this._janitors.error)
+        this._destructible.invokeDestructor('error')
+        this._destructible.addDestructor('delta', this, '_cancel')
         this._delta = delta(async()).ee(this.stream).on('finish')
         this.stream.end()
     }, function () {
         this._delta = null
-        this._destructor.invokeDestructor('delta')
-        this._destructor.destroy(interrupt('closed'))
+        this._destructible.invokeDestructor('delta')
+        this._destructible.destroy(interrupt('closed'))
     })
 })
 
