@@ -23,7 +23,7 @@
                             "cadence":                      "1.0.x",
                             "delta":                        "1.2.0",
                             "interrupt":                    "5.0.x",
-                            "destructible":                 "0.3.x"
+                            "destructible":                 "0.4.x"
     },
     "devDependencies":
     {
