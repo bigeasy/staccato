@@ -22,15 +22,20 @@ Readable.prototype.read = cadence(function (async) {
     var loop = async(function () {
         if (!this._readable) {
             waited = true
+            console.log('waiting')
             this._delta = delta(async()).ee(this.stream).on('readable')
             this._destructible.addDestructor('delta', this, '_cancel')
         }
     }, function () {
+        console.log('resuming', waited, this._readable, this.destroyed)
         if (!this._readable) {
             this._delta = null
             this._destructible.invokeDestructor('delta')
         }
         if (this.destroyed) {
+            // TODO Unlike Writable, reading a closed Readable will always
+            // return null no matter how often you call it.
+            this._readable = true
             return [ loop.break, null ]
         }
         this._readable = true

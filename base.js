@@ -34,6 +34,7 @@ Staccato.prototype._uncatch = function () {
 }
 
 Staccato.prototype._cancel = function () {
+    console.log('cancelling')
     if (this._delta != null) {
         this._delta.cancel([])
         this._delta = null
