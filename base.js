@@ -6,7 +6,7 @@ var interrupt = require('interrupt').createInterrupter('staccato')
 
 function Staccato (stream, opening) {
     this.stream = stream
-    this._destructible = new Destructible(interrupt)
+    this._destructible = new Destructible('staccato')
     this._listeners = {
         open: this._open.bind(this),
         error: this.destroy.bind(this)
