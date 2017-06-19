@@ -4,6 +4,7 @@ var cadence = require('cadence')
 var delta = require('delta')
 var Staccato = require('./base')
 var interrupt = require('interrupt').createInterrupter('staccato')
+var coalesce = require('extant')
 
 function Writable (stream, opening) {
     Staccato.call(this, stream, opening)
@@ -11,8 +12,9 @@ function Writable (stream, opening) {
 util.inherits(Writable, Staccato)
 
 Writable.prototype.write = cadence(function (async, buffer) {
-    interrupt.assert(!this.destroyed, 'destroyed')
+    interrupt.assert(!this.destroyed, 'destroyed', coalesce(this._destructible.errors[0]))
     if (!this.stream.write(buffer)) { // <- does this 'error' if `true`?
+        interrupt.assert(!this.destroyed, 'destroyed', coalesce(this._destructible.errors[0]))
         async(function () {
             this._destructible.invokeDestructor('error')
             this._destructible.addDestructor('delta', this, '_cancel')
@@ -27,7 +29,7 @@ Writable.prototype.write = cadence(function (async, buffer) {
 })
 
 Writable.prototype.close = cadence(function (async) {
-    interrupt.assert(!this.destroyed, 'destroyed')
+    interrupt.assert(!this.destroyed, 'destroyed', coalesce(this._destructible.errors[0]))
     async(function () {
         this._destructible.invokeDestructor('error')
         this._destructible.addDestructor('delta', this, '_cancel')

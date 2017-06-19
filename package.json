@@ -22,6 +22,7 @@
     {
                             "cadence":                      "1.0.x",
                             "delta":                        "1.2.0",
+                            "extant":                       "1.0.x",
                             "interrupt":                    "5.0.x",
                             "destructible":                 "0.13.x"
     },

@@ -31,6 +31,8 @@ Readable.prototype.read = cadence(function (async) {
             this._destructible.invokeDestructor('delta')
         }
         if (this.destroyed) {
+            // TODO Maybe we raise an exception if there is an error using
+            // an Interrupt based assert.
             // TODO Unlike Writable, reading a closed Readable will always
             // return null no matter how often you call it.
             this._readable = true

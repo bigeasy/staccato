@@ -3,13 +3,14 @@ var cadence = require('cadence')
 var delta = require('delta')
 var Destructible = require('destructible')
 var interrupt = require('interrupt').createInterrupter('staccato')
+var coalesce = require('extant')
 
 function Staccato (stream, opening) {
     this.stream = stream
     this._destructible = new Destructible('staccato')
     this._listeners = {
         open: this._open.bind(this),
-        error: this.destroy.bind(this)
+        error: this._destructible.destroy.bind(this._destructible)
     }
     this._destructible.markDestroyed(this)
     this._delta = null
