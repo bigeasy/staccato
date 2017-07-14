@@ -24,7 +24,7 @@
                             "delta":                        "1.2.0",
                             "extant":                       "1.0.x",
                             "interrupt":                    "5.0.x",
-                            "destructible":                 "0.13.x"
+                            "destructible":                 "0.14.x"
     },
     "devDependencies":
     {
