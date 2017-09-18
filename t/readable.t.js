@@ -10,7 +10,7 @@ function prove (async, assert) {
         var gathered = []
         async(function () {
             var loop = async(function () {
-                staccato.read(async())
+                staccato.read(1, async())
             }, function (buffer) {
                 if (buffer == null) {
                     return [ loop.break ]
@@ -23,9 +23,9 @@ function prove (async, assert) {
         async(function () {
             setImmediate(async())
         }, function () {
+            delta(async()).ee(through).on('end')
             through.write(new Buffer('a'))
             through.end()
-            delta(async()).ee(through).on('end')
         })
     }, function () {
         var through = new stream.PassThrough

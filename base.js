@@ -8,11 +8,11 @@ var coalesce = require('extant')
 function Staccato (stream, opening) {
     this.stream = stream
     this._destructible = new Destructible('staccato')
+    this._destructible.markDestroyed(this)
     this._listeners = {
         open: this._open.bind(this),
         error: this._destructible.destroy.bind(this._destructible)
     }
-    this._destructible.markDestroyed(this)
     this._delta = null
     this._readable = false
     if (opening) {
@@ -36,8 +36,9 @@ Staccato.prototype._uncatch = function () {
 
 Staccato.prototype._cancel = function () {
     if (this._delta != null) {
-        this._delta.cancel([])
+        var delta = this._delta
         this._delta = null
+        delta.cancel([])
     }
 }
 

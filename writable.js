@@ -17,11 +17,9 @@ Writable.prototype.write = cadence(function (async, buffer) {
         interrupt.assert(!this.destroyed, 'destroyed', coalesce(this._destructible.errors[0]))
         async(function () {
             this._destructible.invokeDestructor('error')
-            this._destructible.addDestructor('delta', this, '_cancel')
             this._delta = delta(async()).ee(this.stream).on('drain')
         }, function () {
-            this._delta = null
-            this._destructible.invokeDestructor('delta')
+            this._cancel()
             this.stream.once('error', this._listeners.error)
             this._destructible.addDestructor('error', this, '_uncatch')
         })
@@ -32,12 +30,10 @@ Writable.prototype.close = cadence(function (async) {
     interrupt.assert(!this.destroyed, 'destroyed', coalesce(this._destructible.errors[0]))
     async(function () {
         this._destructible.invokeDestructor('error')
-        this._destructible.addDestructor('delta', this, '_cancel')
         this._delta = delta(async()).ee(this.stream).on('finish')
         this.stream.end()
     }, function () {
-        this._delta = null
-        this._destructible.invokeDestructor('delta')
+        this._cancel()
         this._destructible.destroy(interrupt('closed'))
     })
 })

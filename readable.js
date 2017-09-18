@@ -7,8 +7,13 @@ var Staccato = require('./base.js')
 
 function Readable (stream, opening) {
     Staccato.call(this, stream, opening)
-    this.stream.once('end', this._listeners.error)
+    this._ended = false
+    this.stream.once('end', function () {
+        this._ended = true
+        this._cancel()
+    }.bind(this))
     this._destructible.addDestructor('end', this, '_unend')
+    this._destructible.addDestructor('delta', this, '_cancel')
     this._readable = true
 }
 util.inherits(Readable, Staccato)
@@ -17,18 +22,14 @@ Readable.prototype._unend = function () {
     this.stream.removeListener('end', this._listeners.error)
 }
 
-Readable.prototype.read = cadence(function (async) {
-    var waited = false
+Readable.prototype.read = cadence(function (async, count) {
     var loop = async(function () {
         if (!this._readable) {
-            waited = true
             this._delta = delta(async()).ee(this.stream).on('readable')
-            this._destructible.addDestructor('delta', this, '_cancel')
         }
     }, function () {
         if (!this._readable) {
-            this._delta = null
-            this._destructible.invokeDestructor('delta')
+            this._cancel()
         }
         if (this.destroyed) {
             // TODO Maybe we raise an exception if there is an error using
@@ -39,9 +40,10 @@ Readable.prototype.read = cadence(function (async) {
             return [ loop.break, null ]
         }
         this._readable = true
-        var object = this.stream.read()
+        var object = count == null ? this.stream.read() : this.stream.read(count)
         if (object == null) {
-            if (waited) {
+            if (this._ended) {
+                this.destroy()
                 return [ loop.break, null ]
             } else {
                 this._readable = false
