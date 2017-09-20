@@ -22,6 +22,7 @@ function Staccato (stream, opening) {
     }
     this.stream.once('error', this._listeners.error)
     this._destructible.addDestructor('error', this, '_uncatch')
+    this._destructible.addDestructor('delta', this, '_cancel')
     this.destroyed = false
 }
 
@@ -52,11 +53,9 @@ Staccato.prototype.ready = cadence(function (async) {
         async(function () {
             this._destructible.invokeDestructor('open')
             this._destructible.invokeDestructor('error')
-            this._destructible.addDestructor('delta', this, '_cancel')
             this._delta = delta(async()).ee(this.stream).on('open')
         }, function () {
-            this._delta = null
-            this._destructible.invokeDestructor('delta')
+            this._cancel()
             this.stream.once('error', this._listeners.error)
             this._destructible.addDestructor('error', this, '_uncatch')
         })

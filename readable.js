@@ -13,7 +13,6 @@ function Readable (stream, opening) {
         this._cancel()
     }.bind(this))
     this._destructible.addDestructor('end', this, '_unend')
-    this._destructible.addDestructor('delta', this, '_cancel')
     this._readable = true
 }
 util.inherits(Readable, Staccato)
