@@ -18,6 +18,16 @@ Readable.prototype.destroy = function () {
     Staccato.prototype.destroy.call(this)
 }
 
+// The `end` event will issued until `end` is called and all the data has been
+// read from the stream. Calling destroy here will not cause any sort of
+// truncation doing so explicitly cancels our wait on the `readable` event.
+//
+// Basically, we know that during normal operation, after we've reached the end
+// of stream our `read` method is going to get that last `readable` that says
+// that the buffer has drained and then loop back around and wait on `readable`
+// again, blocking indefinitely unless we cancel its wait via Delta.
+
+//
 Readable.prototype._end = function () {
     this._destroy([])
 }
