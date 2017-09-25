@@ -7,18 +7,19 @@ var Staccato = require('./base.js')
 
 function Readable (stream, opening) {
     Staccato.call(this, stream, opening)
-    this._ended = false
-    this.stream.once('end', function () {
-        this._ended = true
-        this._cancel()
-    }.bind(this))
-    this._destructible.addDestructor('end', this, '_unend')
+    this._listeners.end = this._end.bind(this)
+    this.stream.once('end', this._listeners.end)
     this._readable = true
 }
 util.inherits(Readable, Staccato)
 
-Readable.prototype._unend = function () {
-    this.stream.removeListener('end', this._listeners.error)
+Readable.prototype.destroy = function () {
+    this.stream.removeListener('end', this._listeners.end)
+    Staccato.prototype.destroy.call(this)
+}
+
+Readable.prototype._end = function () {
+    this._destroy([])
 }
 
 Readable.prototype.read = cadence(function (async, count) {
@@ -27,26 +28,23 @@ Readable.prototype.read = cadence(function (async, count) {
             this._delta = delta(async()).ee(this.stream).on('readable')
         }
     }, function () {
-        if (!this._readable) {
-            this._cancel()
-        }
+        this._delta = null
+
+        this._readable = true
+
         if (this.destroyed) {
-            // TODO Maybe we raise an exception if there is an error using
-            // an Interrupt based assert.
-            // TODO Unlike Writable, reading a closed Readable will always
-            // return null no matter how often you call it.
-            this._readable = true
+            if (this._error != null) {
+                throw error
+            }
+
+            // Unlike Writable, reading a closed Readable will always return
+            // null no matter how often you call it.
             return [ loop.break, null ]
         }
-        this._readable = true
+
         var object = count == null ? this.stream.read() : this.stream.read(count)
         if (object == null) {
-            if (this._ended) {
-                this.destroy()
-                return [ loop.break, null ]
-            } else {
-                this._readable = false
-            }
+            this._readable = false
         } else {
             return [ loop.break, object ]
         }

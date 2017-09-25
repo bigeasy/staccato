@@ -12,29 +12,24 @@ function Writable (stream, opening) {
 util.inherits(Writable, Staccato)
 
 Writable.prototype.write = cadence(function (async, buffer) {
-    interrupt.assert(!this.destroyed, 'destroyed', coalesce(this._destructible.errors[0]))
+    interrupt.assert(!this.destroyed, 'destroyed', coalesce(this._error))
     if (!this.stream.write(buffer)) { // <- does this 'error' if `true`?
-        interrupt.assert(!this.destroyed, 'destroyed', coalesce(this._destructible.errors[0]))
+        interrupt.assert(!this.destroyed, 'destroyed', coalesce(this._error))
         async(function () {
-            this._destructible.invokeDestructor('error')
             this._delta = delta(async()).ee(this.stream).on('drain')
         }, function () {
-            this._cancel()
-            this.stream.once('error', this._listeners.error)
-            this._destructible.addDestructor('error', this, '_uncatch')
+            this._delta = null
         })
     }
 })
 
 Writable.prototype.close = cadence(function (async) {
-    interrupt.assert(!this.destroyed, 'destroyed', coalesce(this._destructible.errors[0]))
+    interrupt.assert(!this.destroyed, 'destroyed', coalesce(this._error))
     async(function () {
-        this._destructible.invokeDestructor('error')
         this._delta = delta(async()).ee(this.stream).on('finish')
         this.stream.end()
     }, function () {
-        this._cancel()
-        this._destructible.destroy(interrupt('closed'))
+        this._delta = null
     })
 })
 
