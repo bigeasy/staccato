@@ -11,12 +11,17 @@ function Staccato (stream, opening) {
     this._error = null
     this._readable = false
     if (opening) {
-        stream.on('open', this._listeners.open)
+        this._once('open', this._open.bind(this))
     } else {
         this._opened = true
     }
-    this.stream.once('error', this._listeners.error)
+    this._once('error', this._catch.bind(this))
     this.destroyed = false
+}
+
+Staccato.prototype._once = function (name, listener) {
+    this._listeners[name] = listener
+    this.stream.once(name, listener)
 }
 
 Staccato.prototype._catch = function (error) {
@@ -35,8 +40,9 @@ Staccato.prototype.destroy = function () {
 Staccato.prototype._destroy = function (vargs) {
     if (!this.destroyed) {
         this.destroyed = true
-        this.stream.removeListener('open', this._listeners.open)
-        this.stream.removeListener('error', this._listeners.error)
+        for (var name in this._listeners) {
+            this.stream.removeListener(name, this._listeners[name])
+        }
         if (this._delta) {
             this._delta.cancel(vargs)
         }

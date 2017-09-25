@@ -7,16 +7,10 @@ var Staccato = require('./base.js')
 
 function Readable (stream, opening) {
     Staccato.call(this, stream, opening)
-    this._listeners.end = this._end.bind(this)
-    this.stream.once('end', this._listeners.end)
+    this._once('end', this._end.bind(this))
     this._readable = true
 }
 util.inherits(Readable, Staccato)
-
-Readable.prototype.destroy = function () {
-    this.stream.removeListener('end', this._listeners.end)
-    Staccato.prototype.destroy.call(this)
-}
 
 // The `end` event will issued until `end` is called and all the data has been
 // read from the stream. Calling destroy here will not cause any sort of
