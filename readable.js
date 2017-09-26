@@ -1,10 +1,21 @@
+// Node.js API.
 var stream = require('stream')
 var util = require('util')
+
+// Control-flow utilities.
 var cadence = require('cadence')
 var delta = require('delta')
+
+// Exceptions you can catch by type.
 var interrupt = require('interrupt').createInterrupter('staccato')
+
+// Common base class.
 var Staccato = require('./base.js')
 
+// Construct a new `Readable` that reads from the given `stream`. If `opening`
+// is true, the `ready` method will wait until the stream is open.
+
+//
 function Readable (stream, opening) {
     Staccato.call(this, stream, opening)
     this._once('end', this._end.bind(this))
@@ -26,6 +37,17 @@ Readable.prototype._end = function () {
     this._destroy([])
 }
 
+// Read from the stream specifying an optional block count. If the block count
+// is `null` then `read` will return the result of the next call to the
+// underlying `stream.read`. If `count` is not null then `read` will return the
+// `count` bytes or the remainder of the stream if the stream has ended and
+// there are not enough bytes remaining the fulfill the `count`.
+//
+// When the stream has neded or the `Readable.destroy` method is called `read`
+// will call `null`. Reading the end of the stream destroys the `Readable`.
+// Calling `read` after the `Readable` has been destroyed always returns `null`.
+
+//
 Readable.prototype.read = cadence(function (async, count) {
     var loop = async(function () {
         if (!this._readable) {

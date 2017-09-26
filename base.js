@@ -1,7 +1,14 @@
+// Node.js API.
 var stream = require('stream')
+
+// Control-flow utilities.
 var cadence = require('cadence')
 var delta = require('delta')
+
+// Exceptions you can catch by type.
 var interrupt = require('interrupt').createInterrupter('staccato')
+
+// Return the first not null-like value.
 var coalesce = require('extant')
 
 function Staccato (stream, opening) {
