@@ -32,7 +32,6 @@ function prove (async, assert) {
     }, function () {
         staccato = new Staccato.Writable(createWritable(write), false)
         assert(staccato, 'create')
-        staccato.ready(async())
     }, function () {
         staccato.write(new Buffer(1024), async())
     }, function () {
@@ -40,9 +39,6 @@ function prove (async, assert) {
     }, function () {
         var writable
         staccato = new Staccato.Writable(writable = createWritable(write, 1), true)
-        staccato.ready(async())
-        writable.emit('open')
-    }, function () {
         staccato.write(new Buffer(1024), async())
     }, function () {
         staccato.write(new Buffer(1024), async())
@@ -52,10 +48,11 @@ function prove (async, assert) {
     }, [function () {
         var writable
         staccato = new Staccato.Writable(writable = createWritable(write, 1), true)
+        async(function () {
+            staccato.write(new Buffer(1024), async())
+        })()
         writable.emit('error', new Error('foo'))
-        staccato.ready(async())
     }, function (error) {
-        console.log(error.stack)
         assert(/^staccato#destroyed$/m.test(error.message), 'error caught')
     }], function () {
         staccato = new Staccato.Writable(createWritable(write, 1), true)

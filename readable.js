@@ -12,12 +12,11 @@ var interrupt = require('interrupt').createInterrupter('staccato')
 // Common base class.
 var Staccato = require('./base.js')
 
-// Construct a new `Readable` that reads from the given `stream`. If `opening`
-// is true, the `ready` method will wait until the stream is open.
+// Construct a new `Readable` that reads from the given `stream`.
 
 //
-function Readable (stream, opening) {
-    Staccato.call(this, stream, opening)
+function Readable (stream) {
+    Staccato.call(this, stream)
     this._once('end', this._end.bind(this))
     this._readable = true
 }

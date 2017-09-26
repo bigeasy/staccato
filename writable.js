@@ -16,12 +16,11 @@ var coalesce = require('extant')
 var Staccato = require('./base')
 
 
-// Construct a new `Writable` that reads from the given `stream`. If `opening`
-// is true, the `ready` method will wait until the stream is open.
+// Construct a new `Writable` that reads from the given `stream`.
 
 //
-function Writable (stream, opening) {
-    Staccato.call(this, stream, opening)
+function Writable (stream) {
+    Staccato.call(this, stream)
 }
 util.inherits(Writable, Staccato)
 

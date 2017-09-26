@@ -11,17 +11,12 @@ var interrupt = require('interrupt').createInterrupter('staccato')
 // Return the first not null-like value.
 var coalesce = require('extant')
 
-function Staccato (stream, opening) {
+function Staccato (stream) {
     this.stream = stream
     this._listeners = {}
     this._delta = null
     this._error = null
     this._readable = false
-    if (opening) {
-        this._once('open', this._open.bind(this))
-    } else {
-        this._opened = true
-    }
     this._once('error', this._catch.bind(this))
     this.destroyed = false
 }
@@ -33,11 +28,6 @@ Staccato.prototype._once = function (name, listener) {
 
 Staccato.prototype._catch = function (error) {
     this._destroy([ this._error = error ])
-}
-
-Staccato.prototype._open = function () {
-    this.stream.removeListener('open', this._listeners.open)
-    this._opened = true
 }
 
 Staccato.prototype.destroy = function () {
@@ -55,16 +45,5 @@ Staccato.prototype._destroy = function (vargs) {
         }
     }
 }
-
-Staccato.prototype.ready = cadence(function (async) {
-    interrupt.assert(!this.destroyed, 'destroyed')
-    if (!this._opened) {
-        async(function () {
-            this._delta = delta(async()).ee(this.stream).on('open')
-        }, function () {
-            this._delta = null
-        })
-    }
-})
 
 module.exports = Staccato
