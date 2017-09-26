@@ -13,7 +13,7 @@ var coalesce = require('extant')
 
 function Staccato (stream, opening) {
     this.stream = stream
-    this._listeners = { open: this._open.bind(this), error: this._catch.bind(this) }
+    this._listeners = {}
     this._delta = null
     this._error = null
     this._readable = false
