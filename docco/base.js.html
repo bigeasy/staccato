@@ -60,43 +60,80 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
+              <p>Node.js API.</p>
 
             </div>
 
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> stream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'stream'</span>)
-<span class="hljs-keyword">var</span> cadence = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cadence'</span>)
-<span class="hljs-keyword">var</span> delta = <span class="hljs-built_in">require</span>(<span class="hljs-string">'delta'</span>)
-<span class="hljs-keyword">var</span> Destructor = <span class="hljs-built_in">require</span>(<span class="hljs-string">'destructible'</span>)
-<span class="hljs-keyword">var</span> interrupt = <span class="hljs-built_in">require</span>(<span class="hljs-string">'interrupt'</span>).createInterrupter(<span class="hljs-string">'staccato'</span>)
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> stream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'stream'</span>)</pre></div></div>
+
+        </li>
+
+
+        <li id="section-2">
+            <div class="annotation">
+
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Control-flow utilities.</p>
+
+            </div>
+
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> cadence = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cadence'</span>)
+<span class="hljs-keyword">var</span> delta = <span class="hljs-built_in">require</span>(<span class="hljs-string">'delta'</span>)</pre></div></div>
+
+        </li>
+
+
+        <li id="section-3">
+            <div class="annotation">
+
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Exceptions you can catch by type.</p>
+
+            </div>
+
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> interrupt = <span class="hljs-built_in">require</span>(<span class="hljs-string">'interrupt'</span>).createInterrupter(<span class="hljs-string">'staccato'</span>)</pre></div></div>
+
+        </li>
+
+
+        <li id="section-4">
+            <div class="annotation">
+
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Return the first not null-like value.</p>
+
+            </div>
+
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> coalesce = <span class="hljs-built_in">require</span>(<span class="hljs-string">'extant'</span>)
 
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Staccato</span> (<span class="hljs-params">stream, opening</span>) </span>{
     <span class="hljs-keyword">this</span>.stream = stream
-    <span class="hljs-keyword">this</span>._destructor = <span class="hljs-keyword">new</span> Destructor(interrupt)
-    <span class="hljs-keyword">this</span>._listeners = {
-        <span class="hljs-attr">open</span>: <span class="hljs-keyword">this</span>._open.bind(<span class="hljs-keyword">this</span>),
-        <span class="hljs-attr">error</span>: <span class="hljs-keyword">this</span>._destructor.destroy.bind(<span class="hljs-keyword">this</span>._destructor)
-    }
-    <span class="hljs-keyword">this</span>._janitors = {
-        <span class="hljs-attr">open</span>: { <span class="hljs-attr">object</span>: <span class="hljs-keyword">this</span>, <span class="hljs-attr">method</span>: <span class="hljs-string">'_open'</span> },
-        <span class="hljs-attr">error</span>: { <span class="hljs-attr">object</span>: <span class="hljs-keyword">this</span>, <span class="hljs-attr">method</span>: <span class="hljs-string">'_uncatch'</span> },
-        <span class="hljs-attr">destroyed</span>: { <span class="hljs-attr">object</span>: <span class="hljs-keyword">this</span>, <span class="hljs-attr">method</span>: <span class="hljs-string">'_destroyed'</span> },
-        <span class="hljs-attr">delta</span>: { <span class="hljs-attr">object</span>: <span class="hljs-keyword">this</span>, <span class="hljs-attr">method</span>: <span class="hljs-string">'_cancel'</span> },
-    }
-    <span class="hljs-keyword">this</span>._destructor.addDestructor(<span class="hljs-string">'mark'</span>, { <span class="hljs-attr">object</span>: <span class="hljs-keyword">this</span>, <span class="hljs-attr">method</span>: <span class="hljs-string">'_destroyed'</span> })
+    <span class="hljs-keyword">this</span>._listeners = { <span class="hljs-attr">open</span>: <span class="hljs-keyword">this</span>._open.bind(<span class="hljs-keyword">this</span>), <span class="hljs-attr">error</span>: <span class="hljs-keyword">this</span>._catch.bind(<span class="hljs-keyword">this</span>) }
     <span class="hljs-keyword">this</span>._delta = <span class="hljs-literal">null</span>
+    <span class="hljs-keyword">this</span>._error = <span class="hljs-literal">null</span>
     <span class="hljs-keyword">this</span>._readable = <span class="hljs-literal">false</span>
     <span class="hljs-keyword">if</span> (opening) {
-        <span class="hljs-keyword">this</span>._destructor.addDestructor(<span class="hljs-string">'open'</span>, <span class="hljs-keyword">this</span>._janitors.open)
+        <span class="hljs-keyword">this</span>._once(<span class="hljs-string">'open'</span>, <span class="hljs-keyword">this</span>._open.bind(<span class="hljs-keyword">this</span>))
     } <span class="hljs-keyword">else</span> {
-        <span class="hljs-keyword">this</span>._open()
+        <span class="hljs-keyword">this</span>._opened = <span class="hljs-literal">true</span>
     }
-    <span class="hljs-keyword">this</span>.stream.once(<span class="hljs-string">'error'</span>, <span class="hljs-keyword">this</span>._listeners.error)
-    <span class="hljs-keyword">this</span>._destructor.addDestructor(<span class="hljs-string">'error'</span>, <span class="hljs-keyword">this</span>._janitors.error)
+    <span class="hljs-keyword">this</span>._once(<span class="hljs-string">'error'</span>, <span class="hljs-keyword">this</span>._catch.bind(<span class="hljs-keyword">this</span>))
     <span class="hljs-keyword">this</span>.destroyed = <span class="hljs-literal">false</span>
 }
 
-Staccato.prototype._destroyed = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-    <span class="hljs-keyword">this</span>.destroyed = <span class="hljs-literal">true</span>
+Staccato.prototype._once = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">name, listener</span>) </span>{
+    <span class="hljs-keyword">this</span>._listeners[name] = listener
+    <span class="hljs-keyword">this</span>.stream.once(name, listener)
+}
+
+Staccato.prototype._catch = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">error</span>) </span>{
+    <span class="hljs-keyword">this</span>._destroy([ <span class="hljs-keyword">this</span>._error = error ])
 }
 
 Staccato.prototype._open = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
@@ -104,34 +141,29 @@ Staccato.prototype._open = <span class="hljs-function"><span class="hljs-keyword
     <span class="hljs-keyword">this</span>._opened = <span class="hljs-literal">true</span>
 }
 
-Staccato.prototype._uncatch = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-    <span class="hljs-keyword">this</span>.stream.removeListener(<span class="hljs-string">'open'</span>, <span class="hljs-keyword">this</span>._listeners.error)
+Staccato.prototype.destroy = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">this</span>._destroy([])
 }
 
-Staccato.prototype._cancel = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>._delta != <span class="hljs-literal">null</span>) {
-        <span class="hljs-keyword">this</span>._delta.cancel([])
-        <span class="hljs-keyword">this</span>._delta = <span class="hljs-literal">null</span>
+Staccato.prototype._destroy = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">vargs</span>) </span>{
+    <span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>.destroyed) {
+        <span class="hljs-keyword">this</span>.destroyed = <span class="hljs-literal">true</span>
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> name <span class="hljs-keyword">in</span> <span class="hljs-keyword">this</span>._listeners) {
+            <span class="hljs-keyword">this</span>.stream.removeListener(name, <span class="hljs-keyword">this</span>._listeners[name])
+        }
+        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>._delta) {
+            <span class="hljs-keyword">this</span>._delta.cancel(vargs)
+        }
     }
 }
 
-Staccato.prototype.destroy = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-    <span class="hljs-keyword">this</span>._destructor.destroy()
-}
-
 Staccato.prototype.ready = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async</span>) </span>{
-    <span class="hljs-keyword">this</span>._destructor.check()
+    interrupt.assert(!<span class="hljs-keyword">this</span>.destroyed, <span class="hljs-string">'destroyed'</span>)
     <span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>._opened) {
         <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-            <span class="hljs-keyword">this</span>._destructor.invokeDestructor(<span class="hljs-string">'open'</span>)
-            <span class="hljs-keyword">this</span>._destructor.invokeDestructor(<span class="hljs-string">'error'</span>)
-            <span class="hljs-keyword">this</span>._destructor.addDestructor(<span class="hljs-string">'delta'</span>, <span class="hljs-keyword">this</span>._janitors.delta)
             <span class="hljs-keyword">this</span>._delta = delta(<span class="hljs-keyword">async</span>()).ee(<span class="hljs-keyword">this</span>.stream).on(<span class="hljs-string">'open'</span>)
         }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
             <span class="hljs-keyword">this</span>._delta = <span class="hljs-literal">null</span>
-            <span class="hljs-keyword">this</span>._destructor.invokeDestructor(<span class="hljs-string">'delta'</span>)
-            <span class="hljs-keyword">this</span>.stream.once(<span class="hljs-string">'error'</span>, <span class="hljs-keyword">this</span>._listeners.error)
-            <span class="hljs-keyword">this</span>._destructor.addDestructor(<span class="hljs-string">'error'</span>, <span class="hljs-keyword">this</span>._janitors.error)
         })
     }
 })
