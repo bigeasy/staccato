@@ -58,6 +58,7 @@ function prove (async, assert) {
         staccato = new Staccato.Writable(createWritable(write, 1), true)
         staccato.destroy()
         assert(staccato.destroyed, 'destroyed')
+        staccato.destroy()
     }, function () {
         if (!('UNTIDY' in process.env)) {
             cleanup(async())

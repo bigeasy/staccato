@@ -1,4 +1,4 @@
-require('proof')(2, require('cadence')(prove))
+require('proof')(4, require('cadence')(prove))
 
 function prove (async, assert) {
     var Staccato = { Readable: require('../readable') }
@@ -36,5 +36,15 @@ function prove (async, assert) {
         }, function () {
             assert(staccato.destroy, 'destroyed and canceled')
         })
+    }, function () {
+        var through = new stream.PassThrough
+        var staccato = new Staccato.Readable(through)
+        through.emit('error', new Error('errored'))
+        async([function () {
+            staccato.read(async())
+        }, function (error) {
+            assert(error.message, 'errored', 'threw error')
+            assert(staccato.destroy, 'errored and canceled')
+        }])
     })
 }

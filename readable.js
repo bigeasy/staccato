@@ -59,7 +59,7 @@ Readable.prototype.read = cadence(function (async, count) {
 
         if (this.destroyed) {
             if (this._error != null) {
-                throw error
+                throw this._error
             }
 
             // Unlike Writable, reading a closed Readable will always return
