@@ -21,6 +21,8 @@ function Staccato (stream) {
     this.destroyed = false
 }
 
+Staccato.CANCELLED = {}
+
 Staccato.prototype._once = function (name, listener) {
     this._listeners[name] = listener
     this.stream.once(name, listener)
@@ -31,7 +33,7 @@ Staccato.prototype._catch = function (error) {
 }
 
 Staccato.prototype.destroy = function () {
-    this._destroy([])
+    this._destroy([ null, Staccato.CANCELLED ])
 }
 
 Staccato.prototype._destroy = function (vargs) {

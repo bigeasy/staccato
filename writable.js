@@ -20,6 +20,7 @@ var Staccato = require('./base')
 
 //
 function Writable (stream) {
+    this.finished = false
     Staccato.call(this, stream)
 }
 util.inherits(Writable, Staccato)
@@ -41,6 +42,10 @@ Writable.prototype.write = cadence(function (async, buffer) {
     }
 })
 
+// Could have a `closed` property but if you cancel the `finish` with `destroy`
+// it will not be set correctly. I'm not willing to leave a listener on the
+// stream because destroy is supposed to remove itself from the stream.
+
 // Wait for the underlying stream to finish.
 
 //
@@ -49,7 +54,8 @@ Writable.prototype.close = cadence(function (async) {
     async(function () {
         this._delta = delta(async()).ee(this.stream).on('finish')
         this.stream.end()
-    }, function () {
+    }, function (cancelled) {
+        this.finished = cancelled !== Staccato.CANCELLED
         this._delta = null
     })
 })
