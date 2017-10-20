@@ -12,6 +12,11 @@ var interrupt = require('interrupt').createInterrupter('staccato')
 // Common base class.
 var Staccato = require('./base.js')
 
+// Note that we treat destroy will give you the same response as an end of file,
+// a `null`, so use `Readable` and react to destroy just as if you'd encountered
+// a truncated file. If you can't handle a truncated file then don't use
+// `Readable`.
+
 // Construct a new `Readable` that reads from the given `stream`.
 
 //
@@ -42,7 +47,7 @@ Readable.prototype._end = function () {
 // `count` bytes or the remainder of the stream if the stream has ended and
 // there are not enough bytes remaining the fulfill the `count`.
 //
-// When the stream has neded or the `Readable.destroy` method is called `read`
+// When the stream has needed or the `Readable.destroy` method is called `read`
 // will call `null`. Reading the end of the stream destroys the `Readable`.
 // Calling `read` after the `Readable` has been destroyed always returns `null`.
 
