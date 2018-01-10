@@ -65,7 +65,9 @@
             </div>
 
             <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> stream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'stream'</span>)
-<span class="hljs-keyword">var</span> util = <span class="hljs-built_in">require</span>(<span class="hljs-string">'util'</span>)</pre></div></div>
+<span class="hljs-keyword">var</span> util = <span class="hljs-built_in">require</span>(<span class="hljs-string">'util'</span>)
+
+</pre></div></div>
 
         </li>
 
@@ -81,7 +83,9 @@
             </div>
 
             <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> cadence = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cadence'</span>)
-<span class="hljs-keyword">var</span> delta = <span class="hljs-built_in">require</span>(<span class="hljs-string">'delta'</span>)</pre></div></div>
+<span class="hljs-keyword">var</span> delta = <span class="hljs-built_in">require</span>(<span class="hljs-string">'delta'</span>)
+
+</pre></div></div>
 
         </li>
 
@@ -96,7 +100,9 @@
 
             </div>
 
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> interrupt = <span class="hljs-built_in">require</span>(<span class="hljs-string">'interrupt'</span>).createInterrupter(<span class="hljs-string">'staccato'</span>)</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> interrupt = <span class="hljs-built_in">require</span>(<span class="hljs-string">'interrupt'</span>).createInterrupter(<span class="hljs-string">'staccato'</span>)
+
+</pre></div></div>
 
         </li>
 
@@ -111,7 +117,9 @@
 
             </div>
 
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> coalesce = <span class="hljs-built_in">require</span>(<span class="hljs-string">'extant'</span>)</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> coalesce = <span class="hljs-built_in">require</span>(<span class="hljs-string">'extant'</span>)
+
+</pre></div></div>
 
         </li>
 
@@ -126,7 +134,10 @@
 
             </div>
 
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> Staccato = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./base'</span>)</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> Staccato = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./base'</span>)
+
+
+</pre></div></div>
 
         </li>
 
@@ -137,8 +148,7 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
-              <p>Construct a new <code>Writable</code> that reads from the given <code>stream</code>. If <code>opening</code>
-is true, the <code>ready</code> method will wait until the stream is open.</p>
+              <p>Construct a new <code>Writable</code> that reads from the given <code>stream</code>.</p>
 
             </div>
 
@@ -154,10 +164,13 @@ is true, the <code>ready</code> method will wait until the stream is open.</p>
 
             </div>
 
-            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Writable</span> (<span class="hljs-params">stream, opening</span>) </span>{
-    Staccato.call(<span class="hljs-keyword">this</span>, stream, opening)
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Writable</span> (<span class="hljs-params">stream</span>) </span>{
+    <span class="hljs-keyword">this</span>.finished = <span class="hljs-literal">false</span>
+    Staccato.call(<span class="hljs-keyword">this</span>, stream)
 }
-util.inherits(Writable, Staccato)</pre></div></div>
+util.inherits(Writable, Staccato)
+
+</pre></div></div>
 
         </li>
 
@@ -196,7 +209,9 @@ write will return any error reported by the write stream.</p>
             <span class="hljs-keyword">this</span>._delta = <span class="hljs-literal">null</span>
         })
     }
-})</pre></div></div>
+})
+
+</pre></div></div>
 
         </li>
 
@@ -207,7 +222,9 @@ write will return any error reported by the write stream.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
-              <p>Wait for the underlying stream to finish.</p>
+              <p>Could have a <code>closed</code> property but if you cancel the <code>finish</code> with <code>destroy</code>
+it will not be set correctly. I’m not willing to leave a listener on the
+stream because destroy is supposed to remove itself from the stream.</p>
 
             </div>
 
@@ -220,6 +237,19 @@ write will return any error reported by the write stream.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
+              <p>Wait for the underlying stream to finish.</p>
+
+            </div>
+
+        </li>
+
+
+        <li id="section-12">
+            <div class="annotation">
+
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
 
             </div>
 
@@ -228,12 +258,15 @@ write will return any error reported by the write stream.</p>
     <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
         <span class="hljs-keyword">this</span>._delta = delta(<span class="hljs-keyword">async</span>()).ee(<span class="hljs-keyword">this</span>.stream).on(<span class="hljs-string">'finish'</span>)
         <span class="hljs-keyword">this</span>.stream.end()
-    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">cancelled</span>) </span>{
+        <span class="hljs-keyword">this</span>.finished = cancelled !== Staccato.CANCELLED
         <span class="hljs-keyword">this</span>._delta = <span class="hljs-literal">null</span>
     })
 })
 
-<span class="hljs-built_in">module</span>.exports = Writable</pre></div></div>
+<span class="hljs-built_in">module</span>.exports = Writable
+
+</pre></div></div>
 
         </li>
 

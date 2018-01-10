@@ -64,7 +64,9 @@
 
             </div>
 
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> stream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'stream'</span>)</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> stream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'stream'</span>)
+
+</pre></div></div>
 
         </li>
 
@@ -80,7 +82,9 @@
             </div>
 
             <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> cadence = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cadence'</span>)
-<span class="hljs-keyword">var</span> delta = <span class="hljs-built_in">require</span>(<span class="hljs-string">'delta'</span>)</pre></div></div>
+<span class="hljs-keyword">var</span> delta = <span class="hljs-built_in">require</span>(<span class="hljs-string">'delta'</span>)
+
+</pre></div></div>
 
         </li>
 
@@ -95,7 +99,9 @@
 
             </div>
 
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> interrupt = <span class="hljs-built_in">require</span>(<span class="hljs-string">'interrupt'</span>).createInterrupter(<span class="hljs-string">'staccato'</span>)</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> interrupt = <span class="hljs-built_in">require</span>(<span class="hljs-string">'interrupt'</span>).createInterrupter(<span class="hljs-string">'staccato'</span>)
+
+</pre></div></div>
 
         </li>
 
@@ -112,20 +118,17 @@
 
             <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> coalesce = <span class="hljs-built_in">require</span>(<span class="hljs-string">'extant'</span>)
 
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Staccato</span> (<span class="hljs-params">stream, opening</span>) </span>{
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Staccato</span> (<span class="hljs-params">stream</span>) </span>{
     <span class="hljs-keyword">this</span>.stream = stream
-    <span class="hljs-keyword">this</span>._listeners = { <span class="hljs-attr">open</span>: <span class="hljs-keyword">this</span>._open.bind(<span class="hljs-keyword">this</span>), <span class="hljs-attr">error</span>: <span class="hljs-keyword">this</span>._catch.bind(<span class="hljs-keyword">this</span>) }
+    <span class="hljs-keyword">this</span>._listeners = {}
     <span class="hljs-keyword">this</span>._delta = <span class="hljs-literal">null</span>
     <span class="hljs-keyword">this</span>._error = <span class="hljs-literal">null</span>
     <span class="hljs-keyword">this</span>._readable = <span class="hljs-literal">false</span>
-    <span class="hljs-keyword">if</span> (opening) {
-        <span class="hljs-keyword">this</span>._once(<span class="hljs-string">'open'</span>, <span class="hljs-keyword">this</span>._open.bind(<span class="hljs-keyword">this</span>))
-    } <span class="hljs-keyword">else</span> {
-        <span class="hljs-keyword">this</span>._opened = <span class="hljs-literal">true</span>
-    }
     <span class="hljs-keyword">this</span>._once(<span class="hljs-string">'error'</span>, <span class="hljs-keyword">this</span>._catch.bind(<span class="hljs-keyword">this</span>))
     <span class="hljs-keyword">this</span>.destroyed = <span class="hljs-literal">false</span>
 }
+
+Staccato.CANCELLED = {}
 
 Staccato.prototype._once = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">name, listener</span>) </span>{
     <span class="hljs-keyword">this</span>._listeners[name] = listener
@@ -136,13 +139,8 @@ Staccato.prototype._catch = <span class="hljs-function"><span class="hljs-keywor
     <span class="hljs-keyword">this</span>._destroy([ <span class="hljs-keyword">this</span>._error = error ])
 }
 
-Staccato.prototype._open = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-    <span class="hljs-keyword">this</span>.stream.removeListener(<span class="hljs-string">'open'</span>, <span class="hljs-keyword">this</span>._listeners.open)
-    <span class="hljs-keyword">this</span>._opened = <span class="hljs-literal">true</span>
-}
-
 Staccato.prototype.destroy = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-    <span class="hljs-keyword">this</span>._destroy([])
+    <span class="hljs-keyword">this</span>._destroy([ <span class="hljs-literal">null</span>, Staccato.CANCELLED ])
 }
 
 Staccato.prototype._destroy = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">vargs</span>) </span>{
@@ -157,18 +155,9 @@ Staccato.prototype._destroy = <span class="hljs-function"><span class="hljs-keyw
     }
 }
 
-Staccato.prototype.ready = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async</span>) </span>{
-    interrupt.assert(!<span class="hljs-keyword">this</span>.destroyed, <span class="hljs-string">'destroyed'</span>)
-    <span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>._opened) {
-        <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-            <span class="hljs-keyword">this</span>._delta = delta(<span class="hljs-keyword">async</span>()).ee(<span class="hljs-keyword">this</span>.stream).on(<span class="hljs-string">'open'</span>)
-        }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-            <span class="hljs-keyword">this</span>._delta = <span class="hljs-literal">null</span>
-        })
-    }
-})
+<span class="hljs-built_in">module</span>.exports = Staccato
 
-<span class="hljs-built_in">module</span>.exports = Staccato</pre></div></div>
+</pre></div></div>
 
         </li>
 
