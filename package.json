@@ -21,7 +21,7 @@
     "dependencies":
     {
                             "cadence":                      "1.0.x",
-                            "delta":                        "1.2.x",
+                            "delta":                        "1.4.x",
                             "extant":                       "1.0.x",
                             "interrupt":                    "6.2.x"
     },
