@@ -5,9 +5,6 @@ var stream = require('stream')
 var cadence = require('cadence')
 var delta = require('delta')
 
-// Exceptions you can catch by type.
-var interrupt = require('interrupt').createInterrupter('staccato')
-
 // Return the first not null-like value.
 var coalesce = require('extant')
 

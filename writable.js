@@ -7,7 +7,7 @@ var cadence = require('cadence')
 var delta = require('delta')
 
 // Exceptions you can catch by type.
-var interrupt = require('interrupt').createInterrupter('staccato')
+var Interrupt = require('interrupt').createInterrupter('staccato')
 
 // Return the first not null-like value.
 var coalesce = require('extant')
@@ -31,9 +31,9 @@ util.inherits(Writable, Staccato)
 
 //
 Writable.prototype.write = cadence(function (async, buffer) {
-    interrupt.assert(!this.destroyed, 'destroyed', coalesce(this._error))
+    Interrupt.assert(!this.destroyed, 'destroyed', { cause: coalesce(this._error) })
     if (!this.stream.write(buffer)) { // <- does this 'error' if `true`?
-        interrupt.assert(!this.destroyed, 'destroyed', coalesce(this._error))
+        Interrupt.assert(!this.destroyed, 'destroyed', { cause: coalesce(this._error) })
         async(function () {
             this._delta = delta(async()).ee(this.stream).on('drain')
         }, function () {
@@ -50,7 +50,7 @@ Writable.prototype.write = cadence(function (async, buffer) {
 
 //
 Writable.prototype.close = cadence(function (async) {
-    interrupt.assert(!this.destroyed, 'destroyed', coalesce(this._error))
+    Interrupt.assert(!this.destroyed, 'destroyed', { cause: coalesce(this._error) })
     async(function () {
         this._delta = delta(async()).ee(this.stream).on('finish')
         this.stream.end()

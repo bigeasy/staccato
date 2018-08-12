@@ -6,9 +6,6 @@ var util = require('util')
 var cadence = require('cadence')
 var delta = require('delta')
 
-// Exceptions you can catch by type.
-var interrupt = require('interrupt').createInterrupter('staccato')
-
 // Common base class.
 var Staccato = require('./base.js')
 
