@@ -49,7 +49,7 @@ Writable.prototype.write = cadence(function (async, buffer) {
 // Wait for the underlying stream to finish.
 
 //
-Writable.prototype.close = cadence(function (async) {
+Writable.prototype.end = cadence(function (async) {
     Interrupt.assert(!this.destroyed, 'destroyed', { cause: coalesce(this._error) })
     async(function () {
         this._delta = delta(async()).ee(this.stream).on('finish')
