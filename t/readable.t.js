@@ -24,7 +24,7 @@ function prove (async, assert) {
             setImmediate(async())
         }, function () {
             delta(async()).ee(through).on('end')
-            through.write(new Buffer('a'))
+            through.write(Buffer.from('a'))
             through.end()
         })
     }, function () {

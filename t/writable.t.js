@@ -33,15 +33,15 @@ function prove (async, assert) {
         staccato = new Staccato.Writable(createWritable(write), false)
         assert(staccato, 'create')
     }, function () {
-        staccato.write(new Buffer(1024), async())
+        staccato.write(Buffer.alloc(1024), async())
     }, function () {
         staccato.end(async())
     }, function () {
         var writable
         staccato = new Staccato.Writable(writable = createWritable(write, 1), true)
-        staccato.write(new Buffer(1024), async())
+        staccato.write(Buffer.alloc(1024), async())
     }, function () {
-        staccato.write(new Buffer(1024), async())
+        staccato.write(Buffer.alloc(1024), async())
     }, function () {
         assert(1, 'opened and drained')
         staccato.end(async())
@@ -49,7 +49,7 @@ function prove (async, assert) {
         var writable
         staccato = new Staccato.Writable(writable = createWritable(write, 1), true)
         async(function () {
-            staccato.write(new Buffer(1024), async())
+            staccato.write(Buffer.alloc(1024), async())
         })()
         writable.emit('error', new Error('foo'))
     }, function (error) {
