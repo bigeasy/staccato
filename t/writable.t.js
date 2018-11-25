@@ -13,7 +13,7 @@ function write (chunk, encoding, callback) {
 
 proof(4, cadence(prove))
 
-function prove (async, assert) {
+function prove (async, okay) {
     var mkdirp = require('mkdirp'),
         Staccato = { Writable: require('../writable') },
         staccato
@@ -31,7 +31,7 @@ function prove (async, assert) {
         mkdirp(path.join(__dirname, 'tmp'), async())
     }, function () {
         staccato = new Staccato.Writable(createWritable(write), false)
-        assert(staccato, 'create')
+        okay(staccato, 'create')
     }, function () {
         staccato.write(Buffer.alloc(1024), async())
     }, function () {
@@ -43,7 +43,7 @@ function prove (async, assert) {
     }, function () {
         staccato.write(Buffer.alloc(1024), async())
     }, function () {
-        assert(1, 'opened and drained')
+        okay('opened and drained')
         staccato.end(async())
     }, [function () {
         var writable
@@ -51,11 +51,11 @@ function prove (async, assert) {
         writable.emit('error', new Error('foo'))
         staccato.write(Buffer.alloc(1024), async())
     }, function (error) {
-        assert(/^staccato#destroyed$/m.test(error.message), 'error caught')
+        okay(/^staccato#destroyed$/m.test(error.message), 'error caught')
     }], function () {
         staccato = new Staccato.Writable(createWritable(write, 1), true)
         staccato.destroy()
-        assert(staccato.destroyed, 'destroyed')
+        okay(staccato.destroyed, 'destroyed')
         staccato.destroy()
     }, function () {
         if (!('UNTIDY' in process.env)) {

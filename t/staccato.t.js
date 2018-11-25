@@ -1,8 +1,8 @@
 require('proof')(2, prove)
 
-function prove (assert) {
+function prove (okay) {
     var Staccato = require('..')
     console.log(Staccato)
-    assert(Staccato.Readable, 'readable required')
-    assert(Staccato.Writable, 'writable required')
+    okay(Staccato.Readable, 'readable required')
+    okay(Staccato.Writable, 'writable required')
 }
