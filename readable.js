@@ -50,7 +50,7 @@ Readable.prototype._end = function () {
 
 //
 Readable.prototype.read = cadence(function (async, count) {
-    var loop = async(function () {
+    async.loop([], function () {
         if (!this._readable) {
             this._delta = delta(async()).ee(this.stream).on('readable')
         }
@@ -66,16 +66,16 @@ Readable.prototype.read = cadence(function (async, count) {
 
             // Unlike Writable, reading a closed Readable will always return
             // null no matter how often you call it.
-            return [ loop.break, null ]
+            return [ async.break, null ]
         }
 
         var object = count == null ? this.stream.read() : this.stream.read(count)
         if (object == null) {
             this._readable = false
         } else {
-            return [ loop.break, object ]
+            return [ async.break, object ]
         }
-    })()
+    })
 })
 
 module.exports = Readable

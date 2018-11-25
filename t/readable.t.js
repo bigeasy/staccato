@@ -9,14 +9,14 @@ function prove (async, assert) {
         var staccato = new Staccato.Readable(through)
         var gathered = []
         async(function () {
-            var loop = async(function () {
+            async.loop([], function () {
                 staccato.read(1, async())
             }, function (buffer) {
                 if (buffer == null) {
-                    return [ loop.break ]
+                    return [ async.break ]
                 }
                 gathered.push(buffer)
-            })()
+            })
         }, function () {
             assert(Buffer.concat(gathered).toString(), 'a', 'gathered')
         })

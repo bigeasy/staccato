@@ -48,10 +48,8 @@ function prove (async, assert) {
     }, [function () {
         var writable
         staccato = new Staccato.Writable(writable = createWritable(write, 1), true)
-        async(function () {
-            staccato.write(Buffer.alloc(1024), async())
-        })()
         writable.emit('error', new Error('foo'))
+        staccato.write(Buffer.alloc(1024), async())
     }, function (error) {
         assert(/^staccato#destroyed$/m.test(error.message), 'error caught')
     }], function () {
