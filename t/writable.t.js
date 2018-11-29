@@ -33,6 +33,8 @@ function prove (async, okay) {
         staccato = new Staccato.Writable(createWritable(write), false)
         okay(staccato, 'create')
     }, function () {
+        staccato.write(Buffer.alloc(1024), true, async())
+    }, function () {
         staccato.write(Buffer.alloc(1024), async())
     }, function () {
         staccato.end(async())

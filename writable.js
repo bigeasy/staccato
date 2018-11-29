@@ -30,15 +30,18 @@ util.inherits(Writable, Staccato)
 // write will return any error reported by the write stream.
 
 //
-Writable.prototype.write = cadence(function (async, buffer) {
+Writable.prototype.write = cadence(function (async, buffer, flushed) {
     Interrupt.assert(!this.destroyed, 'destroyed', { cause: coalesce(this._error) })
-    if (!this.stream.write(buffer)) { // <- does this 'error' if `true`?
-        Interrupt.assert(!this.destroyed, 'destroyed', { cause: coalesce(this._error) })
-        async(function () {
-            this._delta = delta(async()).ee(this.stream).on('drain')
-        }, function () {
-            this._delta = null
-        })
+    if (flushed) {
+        this.stream.write(buffer, async())
+    } else {
+        if (!this.stream.write(buffer)) { // <- does this 'error' if `true`?
+            async(function () {
+                this._delta = delta(async()).ee(this.stream).on('drain')
+            }, function () {
+                this._delta = null
+            })
+        }
     }
 })
 
