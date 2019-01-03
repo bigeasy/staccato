@@ -29,7 +29,7 @@
     {
                             "mkdirp":                       "0.5.1",
                             "proof":                        "5.0.x",
-                            "rimraf":                       "2.6.2"
+                            "rimraf":                       "2.6.3"
     },
     "main":                 "staccato",
     "scripts":
