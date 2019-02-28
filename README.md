@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/bigeasy/staccato.svg?branch=master)](https://travis-ci.org/bigeasy/staccato) [![Coverage Status](https://coveralls.io/repos/bigeasy/staccato/badge.svg?branch=master&service=github)](https://coveralls.io/github/bigeasy/staccato?branch=master)
-
 Write to a Node.js stream using the error-first callback style. Staccato is part
 of the [Cadence](https://github.com/bigeasy/cadence) Universe. With it you can
 feed a stream using error-first callbacks, a write to the stream will block if
