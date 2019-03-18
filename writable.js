@@ -36,6 +36,8 @@ Writable.prototype.write = cadence(function (async, buffer, flushed) {
         this.stream.write(buffer, async())
     } else {
         if (!this.stream.write(buffer)) { // <- does this 'error' if `true`?
+            // Nope. The error comes out the error handler.
+            Interrupt.assert(!this.destroyed, 'destroyed', { cause: coalesce(this._error) })
             async(function () {
                 this._delta = delta(async()).ee(this.stream).on('drain')
             }, function () {
