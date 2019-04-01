@@ -22,6 +22,8 @@ var Staccato = require('./base')
 function Writable (stream) {
     this.finished = false
     Staccato.call(this, stream)
+    this._once('finish', function () { this.finished = true }.bind(this))
+    this._once('close', function () { this.finished = true }.bind(this))
 }
 util.inherits(Writable, Staccato)
 
@@ -55,14 +57,16 @@ Writable.prototype.write = cadence(function (async, buffer, flushed) {
 
 //
 Writable.prototype.end = cadence(function (async) {
-    Interrupt.assert(!this.destroyed, 'destroyed', { cause: coalesce(this._error) })
-    async(function () {
-        this._delta = delta(async()).ee(this.stream).on('finish')
-        this.stream.end()
-    }, function (cancelled) {
-        this.finished = cancelled !== Staccato.CANCELLED
-        this._delta = null
-    })
+    if (!this.finished) {
+        Interrupt.assert(!this.destroyed, 'destroyed', { cause: coalesce(this._error) })
+        async(function () {
+            this._delta = delta(async()).ee(this.stream).on('finish')
+            this.stream.end()
+        }, function (cancelled) {
+            this.finished = cancelled !== Staccato.CANCELLED
+            this._delta = null
+        })
+    }
 })
 
 module.exports = Writable
