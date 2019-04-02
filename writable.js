@@ -20,7 +20,6 @@ var Staccato = require('./base')
 
 //
 function Writable (stream) {
-    this.finished = false
     Staccato.call(this, stream)
     this._once('finish', this._destroy.bind(this))
     this._once('close', this._destroy.bind(this))
@@ -37,10 +36,14 @@ Writable.prototype.write = cadence(function (async, buffer) {
         return false
     } else if (this.stream.write(buffer)) { // <- comes out the erorr handler if bad
         return ! this.destroyed
+    } else if (this.destroyed) { // <- the above write might destroy
+        return false
     } else {
         async(function () {
+            this.state = 'draining'
             this._delta = delta(async()).ee(this.stream).on('drain')
         }, function () {
+            this.state = 'idle'
             this._delta = null
             return ! this.destroyed
         })
@@ -61,9 +64,11 @@ Writable.prototype.end = cadence(function (async) {
     if (!this.destroyed) {
         async(function () {
             // We know that this will also repsond to close.
+            this.state = 'finishing'
             this._delta = delta(async()).ee(this.stream).on('finish')
             this.stream.end()
         }, function () {
+            this.state = 'idle'
             this._delta = null
         })
     }

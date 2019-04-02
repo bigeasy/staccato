@@ -54,9 +54,11 @@ util.inherits(Readable, Staccato)
 Readable.prototype.read = cadence(function (async, count) {
     async.loop([], function () {
         if (!this._readable) {
+            this.state = 'reading'
             this._delta = delta(async()).ee(this.stream).on('readable')
         }
     }, function () {
+        this.state = 'idle'
         this._delta = null
 
         this._readable = true

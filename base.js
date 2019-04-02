@@ -1,4 +1,5 @@
 function Staccato (stream) {
+    this.state = 'created'
     this.stream = stream
     this._listeners = {}
     this._delta = null

@@ -1,11 +1,12 @@
-require('proof')(5, require('cadence')(prove))
+require('proof')(7, require('cadence')(prove))
 
 function prove (async, okay) {
     var Staccato = { Writable: require('../writable') }
     var stream = require('stream')
-    var through = new stream.PassThrough({ highWaterMark: 2 })
-    var writable = new Staccato.Writable(through)
+    var through, writable
     async(function () {
+        through= new stream.PassThrough({ highWaterMark: 2 })
+        writable = new Staccato.Writable(through)
         writable.write(Buffer.from('a'), async())
     }, function (immediate) {
         okay(immediate, 'write')
@@ -24,7 +25,17 @@ function prove (async, okay) {
         writable.end(async())
     }, function () {
         writable.raise()
+        setImmediate(async()) // Let PassThrough `"end"`.
     }, function () {
-        setImmediate(async())
+        through = new stream.PassThrough({ highWaterMark: 2 })
+        through.write = function () {
+            this.emit('error', new Error)
+            return false
+        }
+        writable = new Staccato.Writable(through)
+        writable.write(Buffer.from('a'), async())
+    }, function (wrote) {
+        okay(!wrote, 'error on write')
+        okay(writable.destroyed, 'error on write destroyed')
     })
 }
