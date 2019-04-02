@@ -1,4 +1,4 @@
-require('proof')(4, require('cadence')(prove))
+require('proof')(5, require('cadence')(prove))
 
 function prove (async, okay) {
     var Staccato = { Readable: require('../readable') }
@@ -6,13 +6,14 @@ function prove (async, okay) {
     var stream = require('stream')
     async(function () {
         var through = new stream.PassThrough
-        var staccato = new Staccato.Readable(through)
+        var readable = new Staccato.Readable(through)
         var gathered = []
         async(function () {
             async.loop([], function () {
-                staccato.read(1, async())
+                readable.read(1, async())
             }, function (buffer) {
                 if (buffer == null) {
+                    readable.raise()
                     return [ async.break ]
                 }
                 gathered.push(buffer)
@@ -29,22 +30,28 @@ function prove (async, okay) {
         })
     }, function () {
         var through = new stream.PassThrough
-        var staccato = new Staccato.Readable(through)
+        var readable = new Staccato.Readable(through)
         async(function () {
-            staccato.read(async())
-            staccato.destroy()
+            readable.read(async())
+            readable.destroy()
         }, function () {
-            okay(staccato.destroy, 'destroyed and canceled')
+            okay(readable.destroy, 'destroyed and canceled')
         })
     }, function () {
         var through = new stream.PassThrough
-        var staccato = new Staccato.Readable(through)
+        var readable = new Staccato.Readable(through)
         through.emit('error', new Error('errored'))
-        async([function () {
-            staccato.read(async())
-        }, function (error) {
-            okay(error.message, 'errored', 'threw error')
-            okay(staccato.destroy, 'errored and canceled')
-        }])
+        async(function () {
+            readable.read(async())
+        }, function (read) {
+            okay(read, null, 'error end of stream')
+            okay(readable.error.message, 'errored', 'error gathered')
+            try {
+                readable.raise()
+            } catch (e) {
+                okay(e.message, 'errored', 'error raised')
+            }
+            readable.destroy()
+        })
     })
 }

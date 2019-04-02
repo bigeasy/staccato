@@ -1,19 +1,8 @@
-// Node.js API.
-var stream = require('stream')
-
-// Control-flow utilities.
-var cadence = require('cadence')
-var delta = require('delta')
-
-// Return the first not null-like value.
-var coalesce = require('extant')
-
 function Staccato (stream) {
     this.stream = stream
     this._listeners = {}
     this._delta = null
-    this._error = null
-    this._readable = false
+    this.error = null
     this._once('error', this._catch.bind(this))
     this.destroyed = false
 }
@@ -26,11 +15,11 @@ Staccato.prototype._once = function (name, listener) {
 }
 
 Staccato.prototype._catch = function (error) {
-    this._destroy([ this._error = error ])
+    this._destroy([ this.error = error ])
 }
 
 Staccato.prototype.destroy = function () {
-    this._destroy([ null, Staccato.CANCELLED ])
+    this._destroy()
 }
 
 Staccato.prototype._destroy = function (vargs) {
@@ -40,8 +29,14 @@ Staccato.prototype._destroy = function (vargs) {
             this.stream.removeListener(name, this._listeners[name])
         }
         if (this._delta) {
-            this._delta.cancel(vargs)
+            this._delta.cancel([])
         }
+    }
+}
+
+Staccato.prototype.raise = function () {
+    if (this.error) {
+        throw this.error
     }
 }
 

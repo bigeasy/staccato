@@ -22,8 +22,8 @@ var Staccato = require('./base')
 function Writable (stream) {
     this.finished = false
     Staccato.call(this, stream)
-    this._once('finish', function () { this.finished = true }.bind(this))
-    this._once('close', function () { this.finished = true }.bind(this))
+    this._once('finish', this._destroy.bind(this))
+    this._once('close', this._destroy.bind(this))
 }
 util.inherits(Writable, Staccato)
 
@@ -32,20 +32,18 @@ util.inherits(Writable, Staccato)
 // write will return any error reported by the write stream.
 
 //
-Writable.prototype.write = cadence(function (async, buffer, flushed) {
-    Interrupt.assert(!this.destroyed, 'destroyed', { cause: coalesce(this._error) })
-    if (flushed) {
-        this.stream.write(buffer, async())
+Writable.prototype.write = cadence(function (async, buffer) {
+    if (this.destroyed) {
+        return false
+    } else if (this.stream.write(buffer)) { // <- comes out the erorr handler if bad
+        return ! this.destroyed
     } else {
-        if (!this.stream.write(buffer)) { // <- does this 'error' if `true`?
-            // Nope. The error comes out the error handler.
-            Interrupt.assert(!this.destroyed, 'destroyed', { cause: coalesce(this._error) })
-            async(function () {
-                this._delta = delta(async()).ee(this.stream).on('drain')
-            }, function () {
-                this._delta = null
-            })
-        }
+        async(function () {
+            this._delta = delta(async()).ee(this.stream).on('drain')
+        }, function () {
+            this._delta = null
+            return ! this.destroyed
+        })
     }
 })
 
@@ -55,15 +53,17 @@ Writable.prototype.write = cadence(function (async, buffer, flushed) {
 
 // Wait for the underlying stream to finish.
 
+// With writable streams you either get a finish or a close, maybe both but you
+// can't count on one or the other before Node.js 10 and the `emitClose` flag.
+
 //
 Writable.prototype.end = cadence(function (async) {
-    if (!this.finished) {
-        Interrupt.assert(!this.destroyed, 'destroyed', { cause: coalesce(this._error) })
+    if (!this.destroyed) {
         async(function () {
+            // We know that this will also repsond to close.
             this._delta = delta(async()).ee(this.stream).on('finish')
             this.stream.end()
-        }, function (cancelled) {
-            this.finished = cancelled !== Staccato.CANCELLED
+        }, function () {
             this._delta = null
         })
     }

@@ -19,8 +19,10 @@ var Staccato = require('./base.js')
 //
 function Readable (stream) {
     Staccato.call(this, stream)
-    this._once('end', this._end.bind(this))
+    this._once('end', this._destroy.bind(this))
+    this._once('close', this._destroy.bind(this))
     this._readable = true
+    this.error = null
 }
 util.inherits(Readable, Staccato)
 
@@ -34,9 +36,9 @@ util.inherits(Readable, Staccato)
 // again, blocking indefinitely unless we cancel its wait via Delta.
 
 //
-Readable.prototype._end = function () {
+/* Readable.prototype._end = function () {
     this._destroy([])
-}
+} */
 
 // Read from the stream specifying an optional block count. If the block count
 // is `null` then `read` will return the result of the next call to the
@@ -60,10 +62,6 @@ Readable.prototype.read = cadence(function (async, count) {
         this._readable = true
 
         if (this.destroyed) {
-            if (this._error != null) {
-                throw this._error
-            }
-
             // Unlike Writable, reading a closed Readable will always return
             // null no matter how often you call it.
             return [ async.break, null ]
