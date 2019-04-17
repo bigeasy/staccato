@@ -1,6 +1,6 @@
 {
     "name":                 "staccato",
-    "version":              "8.0.1",
+    "version":              "8.0.2",
     "description":
 
       "Write to a Node.js stream using the error-first callback style.",
