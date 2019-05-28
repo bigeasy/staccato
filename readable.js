@@ -24,7 +24,7 @@ class Readable {
                 return null
             }
             if (!this._readable) {
-                await once(this._stream, [ 'readable', 'end' ], null)
+                await once(this._stream, [ 'readable', 'end', 'close' ], null)
             }
             if (this.destroyed) {
                 return null
