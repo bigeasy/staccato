@@ -17,7 +17,7 @@ while (read != null && await writable.write([ write ])) {
 
 The above shows the motivation behind this library. Writing to a socket in
 Node.js is relatively undocumented. The documentation says that when `write`
-returns `false` you're supposed to wait for a `"drain"` event beffore continuing
+returns `false` you're supposed to wait for a `"drain"` event before continuing
 to `write`. Staccato will do this for you in the `write` method. There hasn't
 been mention that `write` will also return false when an error destroys the
 stream. When the stream is destroyed there will be no `"drain"` event so waiting
@@ -40,7 +40,7 @@ truncated stream in my buffer processing, so whether the stream ends prematurely
 due to a detectable file or network error, or whether it ends prematurely
 because it was only partially written by the other side is doesn't matter.
 
-Most imporantly, when a duplex stream failed I'd find that I'd be detecting
-errors on both read and write, so once again, it makes more sense to have error
-handling be a separate concern that shuts down the duplex stream processing from
-the outside of the stream processing logic.
+More to the point in regards to `Staccato.Writable`, when a duplex stream failed
+I'd find that I'd be detecting errors on both read and write, so once again it
+makes more sense to have error handling be a separate concern that shuts down
+the duplex stream processing from the outside of the stream processing logic.
