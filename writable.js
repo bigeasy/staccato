@@ -4,13 +4,13 @@ const callback = require('prospective/callback')
 class Writable {
     constructor (stream) {
         this.destroyed = false
-        this._error = () => this._destroy()
+        this._error = () => this.destroy()
         this._output = stream
         this._output.on('error', this._error)
         this._drain = once.NULL
     }
 
-    _destroy () {
+    destroy () {
         this.destroyed = true
         this._output.removeListener('error', this._error)
         this._drain.resolve('drain', null)
@@ -33,7 +33,7 @@ class Writable {
 
     async end () {
         if (!this.destroyed) {
-            this._destroy()
+            this.destroy()
             await callback(callback => this._output.end(callback))
         }
     }
