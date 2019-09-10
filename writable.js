@@ -23,7 +23,7 @@ class Writable {
         }
         for (let buffer of buffers) {
             if (!this._output.write(buffer) && !this.destroyed) {
-                await once(this._output, 'drain', null)
+                await once(this._output, 'drain', null).promise
             }
         }
         return ! this.destroyed
