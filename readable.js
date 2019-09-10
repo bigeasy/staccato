@@ -1,5 +1,5 @@
-const noop = require('nop')
-const LISTENERS = [ 'readable', 'end', 'close', 'error' ]
+const once = require('prospective/once')
+const LISTENERS = [ 'readable', 'end', 'close' ]
 
 class Readable {
     constructor (stream) {
@@ -9,8 +9,8 @@ class Readable {
         this._stream.on('error', this._destroyed)
         this._stream.on('close', this._destroyed)
         this._stream.on('end', this._destroyed)
-        this._resolve = noop
         this._readable = true
+        this._waiting = once.NULL
     }
 
     destroy () {
@@ -18,7 +18,7 @@ class Readable {
         this._stream.removeListener('error', this._destroyed)
         this._stream.removeListener('close', this._destroyed)
         this._stream.removeListener('end', this._destroyed)
-        this._resolve.call()
+        this._waiting.resolve('close', null)
     }
 
     async read (count) {
@@ -27,18 +27,9 @@ class Readable {
                 return null
             }
             if (!this._readable) {
-                await new Promise(resolve => {
-                    this._resolve = () => {
-                        for (const listener of LISTENERS) {
-                            this._stream.removeListener(listener, this._resolve)
-                        }
-                        this._resolve = noop
-                        resolve()
-                    }
-                    for (const listener of LISTENERS) {
-                        this._stream.on(listener, this._resolve)
-                    }
-                })
+                await (this._waiting = once(this._stream, [
+                    'readable', 'end', 'close'
+                ], null)).promise
             }
             if (this.destroyed) {
                 return null
