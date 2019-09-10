@@ -25,8 +25,6 @@
     },
     "devDependencies":
     {
-                            "mkdirp":                       "0.5.1",
-                            "rimraf":                       "3.0.0"
     },
     "main":                 "staccato",
     "scripts":
