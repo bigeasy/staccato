@@ -7,11 +7,13 @@ class Writable {
         this._error = () => this._destroy()
         this._output = stream
         this._output.on('error', this._error)
+        this._drain = once.NULL
     }
 
     _destroy () {
         this.destroyed = true
         this._output.removeListener('error', this._error)
+        this._drain.resolve('drain', null)
     }
 
     async write (buffers) {
@@ -22,8 +24,8 @@ class Writable {
             buffers = [ buffers ]
         }
         for (let buffer of buffers) {
-            if (!this._output.write(buffer) && !this.destroyed) {
-                await once(this._output, 'drain', null).promise
+            if (!this.destroyed && !this._output.write(buffer) && !this.destroyed) {
+                await (this._drain = once(this._output, 'drain', null)).promise
             }
         }
         return ! this.destroyed
