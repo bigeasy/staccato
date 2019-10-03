@@ -1,8 +1,7 @@
-describe('readable', () => {
-    const assert = require('assert')
+require('proof')(6, async (okay) => {
     const stream = require('stream')
     const Readable = require('../readable')
-    it('can read', async () => {
+    {
         const test = []
         const through = new stream.PassThrough
         through.write(Buffer.from('a'))
@@ -11,9 +10,9 @@ describe('readable', () => {
         for await (let chunk of readable) {
             test.push(chunk.toString())
         }
-        assert.deepStrictEqual(test, [ 'a' ], 'test')
-    })
-    it('can break', async () => {
+        okay(test, [ 'a' ], 'read')
+    }
+    {
         const test = []
         const through = new stream.PassThrough
         through.write(Buffer.from('a'))
@@ -23,9 +22,9 @@ describe('readable', () => {
             test.push(chunk.toString())
             break
         }
-        assert.deepStrictEqual(test, [ 'a' ], 'test')
-    })
-    it('can await', async () => {
+        okay(test, [ 'a' ], 'break')
+    }
+    {
         const test = []
         const through = new stream.PassThrough
         const readable = new Readable(through)
@@ -37,16 +36,16 @@ describe('readable', () => {
         through.write(Buffer.from('a'))
         through.end()
         await promise
-        assert.deepStrictEqual(test, [ 'a' ], 'test')
-    })
-    it('can read count bytes', async () => {
+        okay(test, [ 'a' ], 'await')
+    }
+    {
         const test = []
         const through = new stream.PassThrough
         const readable = new Readable(through)
         through.write(Buffer.from('abcdef'))
         through.end()
-        assert.equal((await readable.read(3)).toString(), 'abc', 'chunk 1')
-        assert.equal((await readable.read(3)).toString(), 'def', 'chunk 2')
-        assert.equal(await readable.read(3), null, 'end')
-    })
+        okay((await readable.read(3)).toString(), 'abc', 'read chunk 1')
+        okay((await readable.read(3)).toString(), 'def', 'read chunk 2')
+        okay(await readable.read(3), null, 'end')
+    }
 })

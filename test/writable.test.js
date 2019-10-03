@@ -1,46 +1,45 @@
-describe('wrtiable', () => {
+require('proof')(8, async (okay) => {
     const callback = require('prospective/callback')
     const stream = require('stream')
-    const assert = require('assert')
     const Writable = require('../writable')
     const events = require('events')
-    it('can write', async () => {
+    {
         const through = new stream.PassThrough({ highWaterMark: 2 })
         const writable = new Writable(through)
-        assert(await writable.write(Buffer.from('a')), 'wrote')
+        okay(await writable.write(Buffer.from('a')), 'write string')
         await callback(callback => setImmediate(callback))
-        assert.equal(through.read().toString(), 'a', 'write')
+        okay(through.read().toString(), 'a', 'wrote string')
         await writable.end()
-        assert(! await writable.write(Buffer.from('a')), 'write after close')
-    })
-    it('can drain', async () => {
+        okay(! await writable.write(Buffer.from('a')), 'write after close')
+    }
+    {
         const through = new stream.PassThrough({ highWaterMark: 2 })
         const writable = new Writable(through)
         const promises = [ writable.write(Buffer.from('abc')), writable.write(Buffer.from('def')) ]
         await callback(callback => setImmediate(callback))
-        assert.equal(through.read().toString(), 'abcdef', 'write')
+        okay(through.read().toString(), 'abcdef', 'drain')
         while (promises.length != 0) {
             await promises.shift()
         }
         await writable.end()
-    })
-    it('can write buffers', async () => {
+    }
+    {
         const through = new stream.PassThrough
         const writable = new Writable(through)
-        assert(await writable.write([ Buffer.from('abc'), Buffer.from('def') ]), 'wrote')
+        okay(await writable.write([ Buffer.from('abc'), Buffer.from('def') ]), 'write buffer')
         await callback(callback => setImmediate(callback))
-        assert.equal(through.read().toString(), 'abcdef', 'write')
+        okay(through.read().toString(), 'abcdef', 'wrote buffer')
         await writable.end()
-    })
-    it('can stop on error', async () => {
+    }
+    {
         const through = new stream.PassThrough
         const writable = new Writable(new class extends events.EventEmitter {
             write() {
                 this.emit('error', new Error)
             }
         })
-        assert(!await writable.write(Buffer.from('a')), 'failed')
-        assert(writable.destroyed, 'destroyed')
+        okay(!await writable.write(Buffer.from('a')), 'failed')
+        okay(writable.destroyed, 'destroyed')
         await writable.end()
-    })
+    }
 })
