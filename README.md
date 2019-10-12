@@ -1,4 +1,22 @@
+[![Actions Status](https://github.com/bigeasy/staccato/workflows/Node%20CI/badge.svg)](https://github.com/bigeasy/staccato/actions)
+[![codecov](https://codecov.io/gh/bigeasy/staccato/branch/master/graph/badge.svg)](https://codecov.io/gh/bigeasy/staccato)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Write to a Node.js stream using `async`/`await`.
+
+| What          | Where                                         |
+| --- | --- |
+| Discussion    | https://github.com/bigeasy/staccato/issues/1  |
+| Documentation | https://bigeasy.github.io/staccato            |
+| Source        | https://github.com/bigeasy/staccato           |
+| Issues        | https://github.com/bigeasy/staccato/issues    |
+| CI            | https://travis-ci.org/bigeasy/staccato        |
+| Coverage:     | https://codecov.io/gh/bigeasy/staccato        |
+| License:      | MIT                                           |
+
+```
+npm install staccato
+```
 
 ```
 stream.on('error', (error) => {
