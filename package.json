@@ -1,13 +1,14 @@
 {
     "name":                 "staccato",
-    "version":              "11.0.0-alpha.2",
+    "version":              "11.0.0-alpha.3",
     "description":
 
       "Write to a Node.js stream using the error-first callback style.",
 
     "keywords":
     [
-                            "cadence", "streams", "callbacks", "control", "flow"
+                            "cadence", "streams", "callbacks", "control",
+                            "flow"
     ],
     "author":               "Alan Gutierrez <alan@prettyrobots.com>",
     "homepage":             "https://github.com/bigeasy/staccato",
