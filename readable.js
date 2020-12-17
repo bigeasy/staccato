@@ -42,19 +42,17 @@ class Readable {
         }
     }
 
-    [Symbol.asyncIterator]() {
-        return {
-            next: async () => {
+    async *[Symbol.asyncIterator] () {
+        try {
+            for (;;) {
                 const value = await this.read()
                 if (value == null) {
-                    return { done: true }
+                    break
                 }
-                return { done: false, value }
-            },
-            return: () => {
-                this.destroy()
-                return { done: true }
+                yield value
             }
+        } finally {
+            this.destroy()
         }
     }
 }

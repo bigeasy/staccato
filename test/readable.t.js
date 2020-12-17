@@ -7,7 +7,7 @@ require('proof')(6, async (okay) => {
         through.write(Buffer.from('a'))
         through.end()
         const readable = new Readable(through)
-        for await (let chunk of readable) {
+        for await (const chunk of readable) {
             test.push(chunk.toString())
         }
         okay(test, [ 'a' ], 'read')
@@ -18,7 +18,7 @@ require('proof')(6, async (okay) => {
         through.write(Buffer.from('a'))
         through.end()
         const readable = new Readable(through)
-        for await (let chunk of readable) {
+        for await (const chunk of readable) {
             test.push(chunk.toString())
             break
         }
@@ -29,7 +29,7 @@ require('proof')(6, async (okay) => {
         const through = new stream.PassThrough
         const readable = new Readable(through)
         const promise = (async () => {
-            for await (let chunk of readable) {
+            for await (const chunk of readable) {
                 test.push(chunk.toString())
             }
         })()
