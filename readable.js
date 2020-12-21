@@ -1,5 +1,4 @@
 const once = require('prospective/once')
-const LISTENERS = [ 'readable', 'end', 'close' ]
 
 class Readable {
     constructor (stream) {
