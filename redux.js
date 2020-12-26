@@ -62,18 +62,27 @@ class Staccato extends events.EventEmitter {
         }, this._properties)
     }
 
-    async write (buffer) {
+    write (buffer) {
         if (!this.finished && !this.stream.write(buffer) && !this.finished) {
-            console.log('draining')
             this._drain = once(this.stream, [ 'drain', 'staccato.canceled' ], null)
-            await this._drain.promise
+            return (async () => {
+                this._drain.promise
+                return ! this.finished
+            }) ()
         }
-        return ! this.finished
+        return this.finished ? null : Promise.resolve(true)
     }
 
-    async end () {
+    end () {
         if (!this.finished) {
-            await callback(callback => this.stream.end(callback))
+            return new Promise(resolve => {
+                this.stream.end(error => {
+                    if (error) {
+                        this._errors.push(error)
+                    }
+                    resolve()
+                })
+            })
         }
     }
 

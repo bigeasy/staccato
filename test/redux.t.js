@@ -1,5 +1,6 @@
-require('proof')(16, async okay => {
+require('proof')(17, async okay => {
     const stream = require('stream')
+    const once = require('prospective/once')
     const Staccato = require('../redux')
     const path = require('path')
     const fs = require('fs').promises
@@ -133,7 +134,8 @@ require('proof')(16, async okay => {
 
         try {
             for (const letter of [ 'a', 'b', 'c' ]) {
-                if (! await staccato.write(letter)) {
+                const promise = staccato.write(letter)
+                if (promise != null && ! await promise) {
                     break
                 }
                 through.emit('error', new Error('error'))
@@ -157,7 +159,8 @@ require('proof')(16, async okay => {
         const staccato = new Staccato(through)
 
         for (const letter of [ 'a', 'b', 'c' ]) {
-            if (! await staccato.write(letter)) {
+            const promise = staccato.write(letter)
+            if (promise != null && ! await promise) {
                 console.log('breaking')
                 break
             }
@@ -178,7 +181,9 @@ require('proof')(16, async okay => {
 
         const promise = async function () {
             for (const string of [ 'abc', 'def' ]) {
-                if (! await staccato.write(string)) {
+                const promise = staccato.write(string)
+                if (promise != null && ! await promise) {
+                    console.log('breaking')
                     break
                 }
             }
@@ -304,6 +309,21 @@ require('proof')(16, async okay => {
 
         through.emit('error', new Error('raised'))
     }
+
+    {
+        const through = new stream.PassThrough
+        const finish = once(through, [ 'finish' ])
+        through.end()
+        await finish.promise
+        const staccato = new Staccato(through)
+        await staccato.end()
+        try {
+            staccato.close()
+        } catch (error) {
+            okay(error instanceof Staccato.Error, 'end error caught')
+        }
+    }
+
     return
     {
         const destructible = new Destructible('server')
@@ -330,6 +350,4 @@ require('proof')(16, async okay => {
             await staccato.end()
         })
     }
-
-    const avenue = Staccato.writable(stream)
 })
