@@ -1,5 +1,6 @@
 require('proof')(17, async okay => {
     const stream = require('stream')
+    const callback = require('comeuppance')
     const once = require('eject')
     const Staccato = require('../redux')
     const path = require('path')
@@ -174,7 +175,17 @@ require('proof')(17, async okay => {
 
     // Staccato will handle drain correctly.
 
-    //
+    // Continue to be surprised by streams. `'readable'` is supposed to be
+    // emitted before `'end'` according to the documentation but it doesn't on
+    // Node.js 15, not with `stream.PassThrough` at least. At this point I've
+    // taken to relying on `stream.readableLength` and the `stream.finished()`
+    // helper to determine if I should listen on `'readable'` and counting on
+    // `stream.finished()` to wake us if `'readable'` never arrives.
+
+    // At this point I'll use Staccto reads to test Staccato writes because I
+    // don't want to reimplement them in the tests.
+
+    /*
     {
         const through = new stream.PassThrough({ highWaterMark: 2, emitClose: false })
         const staccato = new Staccato(through)
@@ -199,6 +210,43 @@ require('proof')(17, async okay => {
                 break
             }
             gathered.push(block)
+        }
+
+        okay(Buffer.concat(gathered).toString(), 'abcdef', 'gathered')
+    }
+    */
+
+    //
+    {
+        const through = new stream.PassThrough({ highWaterMark: 2, emitClose: false })
+        const writable = new Staccato(through)
+        const readable = new Staccato(through)
+
+        const gathered = []
+        const reader = async function () {
+            for await (const block of readable) {
+                gathered.push(block)
+            }
+            readable.close()
+        } ()
+
+        //
+        const writer = async function () {
+            for (const string of [ 'abc', 'def' ]) {
+                const promise = writable.write(string)
+                console.log('>> promise')
+                if (promise != null && ! await promise) {
+                    console.log('breaking')
+                    break
+                }
+            }
+            console.log('closing')
+            await writable.end()
+            writable.close()
+        } ()
+
+        for (const promise of [ reader, writer ]) {
+            await promise
         }
 
         okay(Buffer.concat(gathered).toString(), 'abcdef', 'gathered')

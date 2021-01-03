@@ -90,6 +90,7 @@ class Staccato extends events.EventEmitter {
 
     end () {
         if (!this.finished) {
+            console.log('really ending')
             return new Promise(resolve => {
                 this.stream.end(error => {
                     if (error) {
@@ -102,17 +103,16 @@ class Staccato extends events.EventEmitter {
     }
 
     async read (count) {
-        if (this.ended) {
-            return null
+        for (;;) {
+            if (this.stream.readableLength != 0) {
+                return count == null ? this.stream.read() : this.stream.read(count)
+            }
+            if (this.ended) {
+                return null
+            }
+            this._readable = once(this.stream, [ 'readable', 'staccato.canceled' ], null)
+            await this._readable.promise
         }
-        this._readable = once(this.stream, [ 'readable', 'staccato.canceled' ], null)
-        await this._readable.promise
-        if (this.ended) {
-            return null
-        }
-        const object = count == null ? this.stream.read() : this.stream.read(count)
-        this.ended = object == null
-        return object
     }
 
     async *[Symbol.asyncIterator] () {
