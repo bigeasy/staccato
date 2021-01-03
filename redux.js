@@ -17,14 +17,16 @@ class Staccato extends events.EventEmitter {
         this.stream = vargs.shift()
         this._properties = vargs.shift() || {}
         this._vargs = vargs
-        const cleanup = stream.finished(this.stream, () => {
-            cleanup()
+        this._cleanup = stream.finished(this.stream, () => {
+            (this._cleanup)()
+            console.log('here!!!')
             this.finished = true
             this.ended = true
             this._readable.resolve('staccato.canceled')
             this._drain.resolve('staccato.canceled')
         })
-        this.stream.on('error', error => {
+        this.stream.on('error', this._onerror = error => {
+            console.log('here!!!')
             this._errors.push(error)
             if (this.destroyed) {
                 process.emit('staccato.error', this._error(), VERSION)
@@ -45,10 +47,23 @@ class Staccato extends events.EventEmitter {
     }
 
     close () {
-        this.stream.destroy()
-        this.destroyed = true
+        if (this.destroyed != true) {
+            this.destroyed = true
+            this.stream.destroy()
+        }
         if (this._errors.length != 0) {
             throw this._error()
+        }
+    }
+
+    unlisten () {
+        this.destroyed = true
+        if (this._cleanup != null) {
+            (this._cleanup)()
+        }
+        if (this._onerror != null) {
+            this.stream.removeListener('error', this._onerror)
+            this._onerror = null
         }
     }
 
@@ -70,7 +85,7 @@ class Staccato extends events.EventEmitter {
                 return ! this.finished
             }) ()
         }
-        return this.finished ? null : Promise.resolve(true)
+        return this.finished ? Promise.resolve(false) : null
     }
 
     end () {
