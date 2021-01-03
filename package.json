@@ -21,7 +21,7 @@
     },
     "dependencies":
     {
-                            "interrupt":                    "11.0.0-alpha.14",
+                            "interrupt":                    "11.0.0-alpha.16",
                             "eject":                        "0.2.0",
                             "comeuppance":                  "0.0.1"
     },
