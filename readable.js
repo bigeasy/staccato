@@ -1,4 +1,4 @@
-const once = require('prospective/once')
+const once = require('eject')
 
 class Readable {
     constructor (stream) {

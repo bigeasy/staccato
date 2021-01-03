@@ -22,7 +22,8 @@
     "dependencies":
     {
                             "interrupt":                    "11.0.0-alpha.14",
-                            "prospective":                  "^0.3.0"
+                            "eject":                        "0.2.0",
+                            "comeuppance":                  "0.0.0"
     },
     "devDependencies":
     {

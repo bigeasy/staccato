@@ -1,6 +1,6 @@
 require('proof')(17, async okay => {
     const stream = require('stream')
-    const once = require('prospective/once')
+    const once = require('eject')
     const Staccato = require('../redux')
     const path = require('path')
     const fs = require('fs').promises

@@ -1,6 +1,6 @@
 const Interrupt = require('interrupt')
-const callback = require('prospective/callback')
-const once = require('prospective/once')
+const callback = require('comeuppance')
+const once = require('eject')
 const stream = require('stream')
 const events = require('events')
 

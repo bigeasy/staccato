@@ -1,5 +1,5 @@
 require('proof')(8, async (okay) => {
-    const callback = require('prospective/callback')
+    const callback = require('comeuppance')
     const stream = require('stream')
     const Writable = require('../writable')
     const events = require('events')

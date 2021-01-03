@@ -1,5 +1,5 @@
-const once = require('prospective/once')
-const callback = require('prospective/callback')
+const once = require('eject')
+const callback = require('comeuppance')
 
 class Writable {
     constructor (stream) {
