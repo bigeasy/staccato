@@ -1,4 +1,4 @@
-require('proof')(17, async okay => {
+require('proof')(16, async okay => {
     const stream = require('stream')
     const callback = require('comeuppance')
     const once = require('eject')
@@ -227,7 +227,6 @@ require('proof')(17, async okay => {
             for await (const block of readable) {
                 gathered.push(block)
             }
-            readable.close()
         } ()
 
         //
@@ -241,13 +240,15 @@ require('proof')(17, async okay => {
                 }
             }
             console.log('closing')
-            await writable.end()
-            writable.close()
+            writable.end()
         } ()
 
         for (const promise of [ reader, writer ]) {
             await promise
         }
+
+        readable.close()
+        writable.close()
 
         okay(Buffer.concat(gathered).toString(), 'abcdef', 'gathered')
     }
@@ -356,20 +357,6 @@ require('proof')(17, async okay => {
         okay(Buffer.concat(gathered).toString(), 'abc', 'read')
 
         through.emit('error', new Error('raised'))
-    }
-
-    {
-        const through = new stream.PassThrough
-        const finish = once(through, [ 'finish' ])
-        through.end()
-        await finish.promise
-        const staccato = new Staccato(through)
-        await staccato.end()
-        try {
-            staccato.close()
-        } catch (error) {
-            okay(error instanceof Staccato.Error, 'end error caught')
-        }
     }
 
     return

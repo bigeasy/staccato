@@ -10,7 +10,14 @@ class Staccato extends events.EventEmitter {
     static Error = Interrupt.create('Staccato.Error', {
         IO_ERROR: 'errors occurred in the underlying stream'
     })
+    //
 
+    // You need to construct the Staccto the moment you get the stream.
+
+    // **TODO** Assertions that the stream is not finished, ended, closed or
+    // destroyed.
+
+    //
     constructor (...vargs) {
         super()
         this._trace = typeof vargs[0] == 'function' ? vargs.shift() : null
@@ -28,13 +35,15 @@ class Staccato extends events.EventEmitter {
         this.stream.on('error', this._onerror = error => {
             console.log('here!!!')
             this._errors.push(error)
-            if (this.destroyed) {
+            if (this.closed) {
                 process.emit('staccato.error', this._error(), VERSION)
             }
         })
+        this.stream.on('finish', () => this.finished = true)
         this.finished = false
         this.ended = false
-        this.destroyed = false
+        this.stream.on('end', () => this.ended = true)
+        this.closed = false
         this._errors = []
         this._readable = once.NULL
         this._drain = once.NULL
@@ -45,11 +54,13 @@ class Staccato extends events.EventEmitter {
             throw this._error()
         }
     }
+    //
 
+
+    //
     close () {
-        if (this.destroyed != true) {
-            this.destroyed = true
-            this.stream.destroy()
+        if (this.closed != true) {
+            this.closed = true
         }
         if (this._errors.length != 0) {
             throw this._error()
@@ -57,7 +68,7 @@ class Staccato extends events.EventEmitter {
     }
 
     unlisten () {
-        this.destroyed = true
+        this.closed = true
         if (this._cleanup != null) {
             (this._cleanup)()
         }
@@ -87,18 +98,17 @@ class Staccato extends events.EventEmitter {
         }
         return this.finished ? Promise.resolve(false) : null
     }
+    //
 
+    // A callback given to `end()` is simply registered for the `'finish'` or
+    // `'error'` event. On Node.js 12 the `'error'` event is not registered, so
+    // behavior varies across the versions we support, so we just call end if we
+    // haven't already ended.
+
+    //
     end () {
         if (!this.finished) {
-            console.log('really ending')
-            return new Promise(resolve => {
-                this.stream.end(error => {
-                    if (error) {
-                        this._errors.push(error)
-                    }
-                    resolve()
-                })
-            })
+            this.stream.end()
         }
     }
 
