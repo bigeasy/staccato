@@ -1,6 +1,6 @@
 {
     "name":                 "staccato",
-    "version":              "12.0.6",
+    "version":              "12.0.7",
     "description":
 
       "Write to a Node.js stream using the error-first callback style.",
@@ -21,9 +21,9 @@
     },
     "dependencies":
     {
-                            "interrupt":                    "11.0.0-alpha.16",
+                            "comeuppance":                  "0.0.1",
                             "eject":                        "0.2.0",
-                            "comeuppance":                  "0.0.1"
+                            "interrupt":                    "11.0.0-alpha.16"
     },
     "devDependencies":
     {
