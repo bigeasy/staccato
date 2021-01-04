@@ -13,7 +13,7 @@ class Writable {
     destroy () {
         this.destroyed = true
         this._output.removeListener('error', this._error)
-        this._drain.resolve('drain', null)
+        this._drain.emit('drain')
     }
 
     async write (buffers) {

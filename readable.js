@@ -17,7 +17,7 @@ class Readable {
         this._stream.removeListener('error', this._destroyed)
         this._stream.removeListener('close', this._destroyed)
         this._stream.removeListener('end', this._destroyed)
-        this._waiting.resolve('close', null)
+        this._waiting.emit('close')
     }
 
     async read (count) {

@@ -22,7 +22,8 @@
     "dependencies":
     {
                             "comeuppance":                  "0.0.1",
-                            "eject":                        "0.2.0",
+                            "eject":                        "0.2.3",
+                            "perhaps":                      "0.0.4",
                             "interrupt":                    "11.0.0-alpha.16"
     },
     "devDependencies":
