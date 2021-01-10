@@ -12,7 +12,7 @@ class Staccato extends events.EventEmitter {
             this.staccato = staccato
             this.ended = false
             this._done = new Future
-            this._readable = new Future({ resolution: [] })
+            this._readable = Future.resolve()
             this._onreadable = () => this._readable.resolve()
             this._unlisteners = [() => {
                 this.ended = true
