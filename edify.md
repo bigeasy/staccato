@@ -15,10 +15,22 @@ Write to a Node.js stream using `async`/`await`.
 | License:      | MIT                                           |
 
 ```
+//{ "mode": "text" }
 npm install staccato
 ```
 
+```
+//{ "mode": "code" }
+(async () => {
+    const Duplicitous = require('duplicitous')
+    const socket = new Duplicitous
+    const Staccato = require('..')
+    //{ "include": "intro" }
+}) ()
+```
+
 ```javascript
+//{ "name": "intro" }
 const staccato = new Staccato(socket)
 
 socket.on('error', error => console.log(error.stack))
@@ -108,18 +120,26 @@ Proof `okay` function to assert out statements in the readme. A Proof unit test
 generally looks like this.
 
 ```javascript
-require('proof')(4, async okay => {
-    okay('always okay')
-    okay(true, 'okay if true')
-    okay(1, 1, 'okay if equal')
-    okay({ value: 1 }, { value: 1 }, 'okay if deep strict equal')
+//{ "code": { "tests": 19 }, "text": { "tests": 4  } }
+require('proof')(%(tests)d, async okay => {
+    //{ "include": "test", "mode": "code" }
+    //{ "include": "testDisplay", "mode": "text" }
 })
+```
+
+```javascript
+//{ "name": "testDisplay", "mode": "text" }
+okay('always okay')
+okay(true, 'okay if true')
+okay(1, 1, 'okay if equal')
+okay({ value: 1 }, { value: 1 }, 'okay if deep strict equal')
 ```
 
 You can run this unit test yourself to see the output from the various
 code sections of the readme.
 
 ```text
+//{ "mode": "text" }
 git clone git@github.com:bigeasy/staccato.git
 cd staccato
 npm install --no-package-lock --no-save
@@ -129,7 +149,13 @@ node test/readme.t.js
 The `'staccato'` module exports a single `Staccato` object.
 
 ```javascript
+//{ "mode": "text" }
 const Staccato = require('staccato')
+```
+
+```javascript
+//{ "name": "test", "mode": "code" }
+const Staccato = require('..')
 ```
 
 Staccato was indented for use primarily with sockets which is a duplex stream,
@@ -138,9 +164,9 @@ tearing down a server in each test, we're going to use module called Duplicitous
 which provides a mock duplex stream.
 
 ```javascript
+//{ "name": "test" }
 const Duplex = require('duplicitous')
 ```
-
 Staccato believes that streams just truncate sometimes. This may or may not be
 an error that will be reported by the transport. The sender could just close the
 socket. There's always an application requirement to validate the the data that
@@ -153,20 +179,23 @@ To read from the stream you use `staccato.readable`. When you reference
 `Readable` stream. If you never reference it, staccato will ingnore it.
 
 ```javascript
-const socket = new Duplex
-const staccato = new Staccato(socket)
+//{ "name": "test", "unblock": true }
+{
+    const socket = new Duplex
+    const staccato = new Staccato(socket)
 
-socket.input.write('a')
-socket.input.write('b')
-socket.input.write('c')
-socket.input.end()
+    socket.input.write('a')
+    socket.input.write('b')
+    socket.input.write('c')
+    socket.input.end()
 
-const gathered = []
-for await (const block of staccato.readable) {
-    gathered.push(block)
+    const gathered = []
+    for await (const block of staccato.readable) {
+        gathered.push(block)
+    }
+
+    okay(Buffer.concat(gathered).toString(), 'abc', 'read')
 }
-
-okay(Buffer.concat(gathered).toString(), 'abc', 'read')
 ```
 
 You can use `read` from `staccato.readable` and you can pass it a `size` which
@@ -174,23 +203,26 @@ will await for `size` bytes before returning unless the stream has ended and
 less than `size` bytes are all that is left.
 
 ```javascript
-const duplex = new Duplex
-const staccato = new Staccato(duplex)
+//{ "name": "test", "unblock": true }
+{
+    const duplex = new Duplex
+    const staccato = new Staccato(duplex)
 
-duplex.input.write('abc')
-duplex.input.end()
+    duplex.input.write('abc')
+    duplex.input.end()
 
-const gathered = []
-for (;;) {
-    const block = await staccato.readable.read(1)
-    if (block == null) {
-        break
+    const gathered = []
+    for (;;) {
+        const block = await staccato.readable.read(1)
+        if (block == null) {
+            break
+        }
+        gathered.push(block)
     }
-    gathered.push(block)
-}
 
-okay(gathered.length, 3, 'byte at a time')
-okay(Buffer.concat(gathered).toString(), 'abc', 'read')
+    okay(gathered.length, 3, 'byte at a time')
+    okay(Buffer.concat(gathered).toString(), 'abc', 'read')
+}
 ```
 
 Staccato will swallow the first error that occurs. It registers a `once` error
@@ -199,6 +231,7 @@ A `Readable` stream will not always emit `end` after an error occurs. You must
 register your own error handler on the stream you provide to report any errors.
 
 ```javascript
+//{ "name": "test" }
 {
     const duplex = new Duplex
     const staccato = new Staccato(duplex)
@@ -230,15 +263,18 @@ the trips to the micro-task queue.
 Here we leave our write loop early because of an error.
 
 ```javascript
-const duplex = new Duplex
-const staccato = new Staccato(duplex)
+//{ "name": "test", "unblock": true }
+{
+    const duplex = new Duplex
+    const staccato = new Staccato(duplex)
 
-for (const letter of [ 'a', 'b', 'c' ]) {
-    await staccato.writable.write([ letter ])
+    for (const letter of [ 'a', 'b', 'c' ]) {
+        await staccato.writable.write([ letter ])
+    }
+    staccato.writable.end()
+
+    okay(String(duplex.output.read()), 'abc', 'written')
 }
-staccato.writable.end()
-
-okay(String(duplex.output.read()), 'abc', 'written')
 ```
 
 If you write after an error an `Staccato.Error` is thrown with a `code` property
@@ -246,16 +282,19 @@ of `"WRITE_AFTER_FINISH"` and `symbol` property of
 `Staccato.Error.WRITE_AFTER_FINISH`.
 
 ```javascript
-const duplex = new Duplex
-const staccato = new Staccato(duplex)
-try {
-    for (const letter of [ 'a', 'b', 'c' ]) {
-        await staccato.writable.write([ letter ])
-        duplex.emit('error', new Error('error'))
+//{ "name": "test", "unblock": true }
+{
+    const duplex = new Duplex
+    const staccato = new Staccato(duplex)
+    try {
+        for (const letter of [ 'a', 'b', 'c' ]) {
+            await staccato.writable.write([ letter ])
+            duplex.emit('error', new Error('error'))
+        }
+        staccato.writable.end()
+    } catch (error) {
+        okay(error.symbol, Staccato.Error.WRITE_AFTER_FINISH, 'raised error at close')
     }
-    staccato.writable.end()
-} catch (error) {
-    okay(error.symbol, Staccato.Error.WRITE_AFTER_FINISH, 'raised error at close')
 }
 ```
 
@@ -264,75 +303,87 @@ swallow the error when you do this so be sure to have that listener registered
 on the stream's error event.
 
 ```javascript
-const errors = []
-const duplex = new Duplex
-duplex.on('error', error => errors.push(error.message))
-const staccato = new Staccato(duplex)
-await Staccato.rescue(async () => {
-    for (const letter of [ 'a', 'b', 'c' ]) {
-        await staccato.writable.write([ letter ])
-        duplex.emit('error', new Error('error'))
-    }
-    staccato.writable.end()
-})
-okay(errors, [ 'error' ], 'errors occured')
+//{ "name": "test", "unblock": true }
+{
+    const errors = []
+    const duplex = new Duplex
+    duplex.on('error', error => errors.push(error.message))
+    const staccato = new Staccato(duplex)
+    await Staccato.rescue(async () => {
+        for (const letter of [ 'a', 'b', 'c' ]) {
+            await staccato.writable.write([ letter ])
+            duplex.emit('error', new Error('error'))
+        }
+        staccato.writable.end()
+    })
+    okay(errors, [ 'error' ], 'errors occured')
+}
 ```
 
 If there is no error, `Staccato.rescue()` returns normally.
 
 ```javascript
-const errors = []
-const duplex = new Duplex
-duplex.on('error', error => errors.push(error.message))
-const staccato = new Staccato(duplex)
-await Staccato.rescue(async () => {
-    for (const letter of [ 'a', 'b', 'c' ]) {
-        await staccato.writable.write([ letter ])
-    }
-    staccato.writable.end()
-})
-okay(errors, [], 'no errors occured')
-okay(String(duplex.output.read()), 'abc', 'no errors occured data written')
+//{ "name": "test", "unblock": true }
+{
+    const errors = []
+    const duplex = new Duplex
+    duplex.on('error', error => errors.push(error.message))
+    const staccato = new Staccato(duplex)
+    await Staccato.rescue(async () => {
+        for (const letter of [ 'a', 'b', 'c' ]) {
+            await staccato.writable.write([ letter ])
+        }
+        staccato.writable.end()
+    })
+    okay(errors, [], 'no errors occured')
+    okay(String(duplex.output.read()), 'abc', 'no errors occured data written')
+}
 ```
 
 If there is an exception is raised other than a
 `Staccato.Error.WRITE_AFTER_FINISH` the exception is rethrown.
 
 ```javascript
-const caught = []
-const duplex = new Duplex
-duplex.on('error', error => errors.push(error.message))
-const staccato = new Staccato(duplex)
-try {
-    await Staccato.rescue(async () => {
-        for (const letter of [ 'a', 'b', 'c' ]) {
-            await staccato.writable.write([ letter ])
-            throw new Error('thrown')
-        }
-        staccato.writable.end()
-    })
-} catch (error) {
-    caught.push(error.message)
+//{ "name": "test", "unblock": true }
+{
+    const caught = []
+    const duplex = new Duplex
+    duplex.on('error', error => errors.push(error.message))
+    const staccato = new Staccato(duplex)
+    try {
+        await Staccato.rescue(async () => {
+            for (const letter of [ 'a', 'b', 'c' ]) {
+                await staccato.writable.write([ letter ])
+                throw new Error('thrown')
+            }
+            staccato.writable.end()
+        })
+    } catch (error) {
+        caught.push(error.message)
+    }
+    okay(caught, [ 'thrown' ], 'exception rethrown')
 }
-okay(caught, [ 'thrown' ], 'exception rethrown')
 ```
 
 You can also use rescue with a `Promise`.
 
 ```javascript
-const errors = []
-const duplex = new Duplex
-duplex.on('error', error => errors.push(error.message))
-const staccato = new Staccato(duplex)
-const promise = async function () {
-    for (const letter of [ 'a', 'b', 'c' ]) {
-        await staccato.writable.write([ letter ])
-    }
-    staccato.writable.end()
-} ()
-await Staccato.rescue(promise)
-okay(errors, [], 'no errors occured')
-okay(String(duplex.output.read()), 'abc', 'no errors occured data written')
+//{ "name": "test", "unblock": true }
+{
+    const errors = []
+    const duplex = new Duplex
+    duplex.on('error', error => errors.push(error.message))
+    const staccato = new Staccato(duplex)
+    const promise = async function () {
+        for (const letter of [ 'a', 'b', 'c' ]) {
+            await staccato.writable.write([ letter ])
+        }
+        staccato.writable.end()
+    } ()
+    await Staccato.rescue(promise)
+    okay(errors, [], 'no errors occured')
+    okay(String(duplex.output.read()), 'abc', 'no errors occured data written')
+}
 ```
 
 If you want to, you can perform the writes synchronously using
@@ -347,21 +398,24 @@ is finished `staccato.write()` will always return true and `drain()` is a
 no-op.
 
 ```javascript
-const duplex = new Duplex
-duplex.on('error', error => console.log(error))
-const staccato = new Staccato(duplex)
+//{ "name": "test", "unblock": true }
+{
+    const duplex = new Duplex
+    duplex.on('error', error => console.log(error))
+    const staccato = new Staccato(duplex)
 
-for (const letter of [ 'a', 'b', 'c' ]) {
-    if (staccato.writable.finished) {
-        break
+    for (const letter of [ 'a', 'b', 'c' ]) {
+        if (staccato.writable.finished) {
+            break
+        }
+        if (!staccato.stream.write(letter)) {
+            await staccato.writable.drain()
+        }
     }
-    if (!staccato.stream.write(letter)) {
-        await staccato.writable.drain()
-    }
+    staccato.writable.end()
+
+    okay(duplex.output.read().toString(), 'abc', 'wrote')
 }
-staccato.writable.end()
-
-okay(duplex.output.read().toString(), 'abc', 'wrote')
 ```
 
 You can't wait for errors. They can arrive after you've moved onto other
@@ -381,74 +435,83 @@ listener registered.
 Therefore in this example we're only waiting for writable to finish.
 
 ```javascript
-const duplex = new Duplex
-duplex.on('error', error => console.log(error))
-const staccato = new Staccato(duplex)
+//{ "name": "test", "unblock": true }
+{
+    const duplex = new Duplex
+    duplex.on('error', error => console.log(error))
+    const staccato = new Staccato(duplex)
 
-for (const letter of [ 'a', 'b', 'c' ]) {
-    if (staccato.writable.finished) {
-        break
+    for (const letter of [ 'a', 'b', 'c' ]) {
+        if (staccato.writable.finished) {
+            break
+        }
+        if (!staccato.stream.write(letter)) {
+            await staccato.writable.drain()
+        }
     }
-    if (!staccato.stream.write(letter)) {
-        await staccato.writable.drain()
+    staccato.writable.end()
+
+    const promise = staccato.done()
+    if (promise != null) {
+        await promise
     }
-}
-staccato.writable.end()
 
-const promise = staccato.done()
-if (promise != null) {
-    await promise
+    okay(staccato.done(), null, 'once done, done is async')
+    okay(duplex.output.read().toString(), 'abc', 'wrote')
 }
-
-okay(staccato.done(), null, 'once done, done is async')
-okay(duplex.output.read().toString(), 'abc', 'wrote')
 ```
 
 Staccato will handle drain correctly.
 
 ```javascript
-const duplex = new Duplex({ writableHighWaterMark: 2 })
-const staccato = new Staccato(duplex)
+//{ "name": "test", "unblock": true }
+{
+    const duplex = new Duplex({ writableHighWaterMark: 2 })
+    const staccato = new Staccato(duplex)
 
-const promise = async function () {
-    await staccato.writable.write([ 'abc', 'def' ])
-    staccato.writable.end()
-} ()
+    const promise = async function () {
+        await staccato.writable.write([ 'abc', 'def' ])
+        staccato.writable.end()
+    } ()
 
-const gathered = []
-duplex.output.on('readable', () => {
-    for (;;) {
-        const block = duplex.output.read()
-        if (block == null) {
-            break
+    const gathered = []
+    duplex.output.on('readable', () => {
+        for (;;) {
+            const block = duplex.output.read()
+            if (block == null) {
+                break
+            }
+            gathered.push(block)
         }
-        gathered.push(block)
-    }
-})
+    })
 
-await new Promise(resolve => duplex.output.once('end', resolve))
-await promise
+    await new Promise(resolve => duplex.output.once('end', resolve))
+    await promise
 
-okay(Buffer.concat(gathered).toString(), 'abcdef', 'drained')
+    okay(Buffer.concat(gathered).toString(), 'abcdef', 'drained')
+}
 ```
 
 Note that write accepts any form of iterable.
 
 ```javascript
-const duplex = new Duplex
-duplex.on('error', error => conosle.log(error))
-const staccato = new Staccato(duplex)
+//{ "name": "test", "unblock": true }
+{
+    const duplex = new Duplex
+    duplex.on('error', error => conosle.log(error))
+    const staccato = new Staccato(duplex)
 
-await staccato.writable.write(function* () {
-    for (const string of [ 'abc', 'def' ]) {
-        yield string
-    }
-} ())
-staccato.writable.end()
+    await staccato.writable.write(function* () {
+        for (const string of [ 'abc', 'def' ]) {
+            yield string
+        }
+    } ())
+    staccato.writable.end()
 
-await new Promise(resolve => duplex.output.once('finish', resolve))
+    await new Promise(resolve => duplex.output.once('finish', resolve))
 
-okay(String(duplex.output.read()), 'abcdef', 'iterated')
+    okay(String(duplex.output.read()), 'abcdef', 'iterated')
+}
 ```
 
 `Staccato.writeable.consume()` accepts an `async` iterator that returns arrays
@@ -457,50 +520,56 @@ use it to consume queues created by the Avenue work queue so that my code is
 just a matter of connecting pipelines.
 
 ```javascript
-const duplex = new Duplex
-duplex.on('error', error => conosle.log(error))
-const staccato = new Staccato(duplex)
+//{ "name": "test", "unblock": true }
+{
+    const duplex = new Duplex
+    duplex.on('error', error => conosle.log(error))
+    const staccato = new Staccato(duplex)
 
-await staccato.writable.consume(async function* () {
-    for (const buffers of [[ 'abc', 'def' ], [ 'ghi' ]]) {
-        yield buffers
-    }
-} ())
-staccato.writable.end()
-
-await new Promise(resolve => duplex.output.once('finish', resolve))
-
-okay(String(duplex.output.read()), 'abcdefghi', 'async iterated')
-```
-
-It will also correctly handle write back-pressure and drain.
-
-```javascript
-const duplex = new Duplex({ writableHighWaterMark: 2 })
-const staccato = new Staccato(duplex)
-
-const promise = async function () {
     await staccato.writable.consume(async function* () {
         for (const buffers of [[ 'abc', 'def' ], [ 'ghi' ]]) {
             yield buffers
         }
     } ())
     staccato.writable.end()
-} ()
 
-const gathered = []
-duplex.output.on('readable', () => {
-    for (;;) {
-        const block = duplex.output.read()
-        if (block == null) {
-            break
+    await new Promise(resolve => duplex.output.once('finish', resolve))
+
+    okay(String(duplex.output.read()), 'abcdefghi', 'async iterated')
+}
+```
+
+It will also correctly handle write back-pressure and drain.
+
+```javascript
+//{ "name": "test", "unblock": true }
+{
+    const duplex = new Duplex({ writableHighWaterMark: 2 })
+    const staccato = new Staccato(duplex)
+
+    const promise = async function () {
+        await staccato.writable.consume(async function* () {
+            for (const buffers of [[ 'abc', 'def' ], [ 'ghi' ]]) {
+                yield buffers
+            }
+        } ())
+        staccato.writable.end()
+    } ()
+
+    const gathered = []
+    duplex.output.on('readable', () => {
+        for (;;) {
+            const block = duplex.output.read()
+            if (block == null) {
+                break
+            }
+            gathered.push(block)
         }
-        gathered.push(block)
-    }
-})
+    })
 
-await new Promise(resolve => duplex.output.once('end', resolve))
-await promise
+    await new Promise(resolve => duplex.output.once('end', resolve))
+    await promise
 
-okay(Buffer.concat(gathered).toString(), 'abcdefghi', 'async iterated drained')
+    okay(Buffer.concat(gathered).toString(), 'abcdefghi', 'async iterated drained')
+}
 ```

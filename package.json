@@ -28,9 +28,9 @@
     },
     "devDependencies":
     {
+                            "duplicitous":                  "0.2.4",
                             "proof":                        "^9.0.1"
     },
-    "main":                 "staccato",
     "scripts":
     {
                             "test": "proof test/*.t.js"

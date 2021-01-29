@@ -4,13 +4,27 @@ const once = require('eject')
 const stream = require('stream')
 const events = require('events')
 
-const VERSION = + require('./package.json').version.split('.')[0]
-
 class Staccato extends events.EventEmitter {
+    static VERSION = +require('./package.json').version.split('.')[0]
+
+    static Error = Interrupt.create('Staccato.Error', {
+        WRITE_AFTER_FINISH: 'attempted to write after finish'
+    })
+
+    static async rescue (f) {
+        try {
+            return await (typeof f == 'function' ? f() : f)
+        } catch (error) {
+            if (error.symbol !== Staccato.Error.WRITE_AFTER_FINISH) {
+                throw error
+            }
+        }
+    }
+
     static Reader = class {
         constructor (staccato) {
             this.staccato = staccato
-            this.ended = false
+            this.ended = staccato._destroyed
             this._done = new Future
             this._readable = Future.resolve()
             this._onreadable = () => this._readable.resolve()
@@ -20,7 +34,6 @@ class Staccato extends events.EventEmitter {
                 this._readable.resolve()
             }]
             if (
-                this.staccato.departed ||
                 this.staccato.errored ||
                 ! this.staccato.stream.readable ||
                 this.staccato.stream.destroyed
@@ -43,6 +56,7 @@ class Staccato extends events.EventEmitter {
         }
 
         _unlisten () {
+            this.ended = true
             this._unlisteners.splice(0).forEach(f => f())
         }
 
@@ -102,16 +116,39 @@ class Staccato extends events.EventEmitter {
             }
             return null
         }
+        //
 
+        // Unlisten.
+
+        //
         _unlisten () {
             this._unlisteners.splice(0).forEach(f => f())
         }
+        //
 
+        // A cancelable drain that will return if the stream errors.
+
+        //
         async drain () {
             if (! this.finished) {
                 this._drain = once(this.staccato.stream, [ 'drain', 'staccato.finished' ], null)
                 await this._drain.promise
             }
+        }
+        //
+
+        // Internal synchronous write. If it returns a promise it means we need
+        // to wait on the promise to drain.
+
+        //
+        _write (buffer) {
+            if (! this.finished && this.staccato.stream.write(buffer)) {
+                return null
+            }
+            if (this.finished) {
+                throw new Staccato.Error('WRITE_AFTER_FINISH')
+            }
+            return this.drain()
         }
         //
 
@@ -124,64 +161,28 @@ class Staccato extends events.EventEmitter {
         // Node.js streams API.
 
         //
-        write (buffer) {
-            if (this.finished) {
-                return true
+        async write (buffers) {
+            for (const buffer of buffers) {
+                const promise = this._write(buffer)
+                if (promise != null) {
+                    await promise
+                }
             }
-            return this.staccato.stream.write(buffer)
         }
         //
 
         // That loop is going to be unpleasant to test.
 
         //
-        async _async (iterator, end) {
-            try {
-                for await (const write of iterator) {
-                    const writes = Array.isArray(write) ? write : [ write ]
-                    for (const write of writes) {
-                        if (this.finished) {
-                            break
-                        }
-                        if (! this.write(write)) {
-                            await this.drain()
-                        }
+        async consume (iterator) {
+            for await (const buffers of iterator) {
+                for (const buffer of buffers) {
+                    const promise = this._write(buffer)
+                    if (promise != null) {
+                        await promise
                     }
                 }
-            } finally {
-                if (end) {
-                    this.end()
-                }
             }
-        }
-        //
-
-        //
-        async _sync (iterator, end) {
-            try {
-                for (const write of iterator) {
-                    const writes = Array.isArray(write) ? write : [ write ]
-                    for (const write of writes) {
-                        if (this.finished) {
-                            break
-                        }
-                        if (! this.write(write)) {
-                            await this.drain()
-                        }
-                    }
-                }
-            } finally {
-                if (end) {
-                    this.end()
-                }
-            }
-        }
-        //
-        consume (iterator, end = false) {
-            if (iterator[Symbol.asyncIterator]) {
-                return this._async(iterator, end)
-            }
-            return this._sync(iterator, end)
         }
         //
 
@@ -192,15 +193,10 @@ class Staccato extends events.EventEmitter {
 
         //
         end () {
-            if (! this.finished) {
-                this.staccato.stream.end()
-            }
+            Staccato.Error.assert(! this.finished, 'WRITE_AFTER_FINISH')
+            this.staccato.stream.end()
         }
     }
-
-    static Error = Interrupt.create('Staccato.Error', {
-        IO_ERROR: 'errors occurred in the underlying stream'
-    })
     //
 
     // You need to construct the Staccto the moment you get the stream.
@@ -209,25 +205,15 @@ class Staccato extends events.EventEmitter {
     // destroyed.
 
     //
-    constructor (...vargs) {
+    constructor (stream) {
         super()
-        this._trace = typeof vargs[0] == 'function' ? vargs.shift() : null
-        this.stream = vargs.shift()
-        this._properties = vargs.shift() || {}
-        this.departed = false
+        this.stream = stream
         this._readable = null
         this._writable = null
-        this._errors = []
-        this.errored = false
         this._listening = []
-        this.listening = true
-        this.stream.on('error', this._onerror = error => {
-            this.errored = true
-            this._unlisten()
-            this._errors.push(error)
-            if (this.departed) {
-                process.emit('staccato.error', this._error(), VERSION)
-            }
+        this.stream.once('error', this._onerror = error => {
+            this._destroyed = true
+            this.unlisten()
         })
     }
 
@@ -247,7 +233,7 @@ class Staccato extends events.EventEmitter {
         return this._writable
     }
 
-    get done () {
+    done () {
         const dones = [
             this._readable, this._writable
         ].filter(able => able)
@@ -259,42 +245,9 @@ class Staccato extends events.EventEmitter {
         return null
     }
 
-    _unlisten () {
-        this._listening.splice(0).forEach(listener => listener._unlisten())
-    }
-
     unlisten () {
-        if (this.listening) {
-            this.listening = false
-            this._unlisten()
-            this.stream.removeListener('error', this._onerror)
-            this._onerror = null
-        }
-    }
-
-    errors () {
-        return this._errors.splice(0)
-    }
-
-    _error ($callee) {
-        return new Staccato.Error('IO_ERROR', this._errors.splice(0), {
-            $trace: this._trace, $callee: $callee
-        }, this._properties)
-    }
-
-    _raise ($callee) {
-        if (this._errors.length != 0) {
-            throw this._error($callee)
-        }
-    }
-
-    raise () {
-        this._raise(this.raise)
-    }
-
-    depart () {
-        this.departed = true
-        this._raise(this.depart)
+        this._listening.splice(0).forEach(listener => listener._unlisten())
+        this.stream.removeListener('error', this._onerror)
     }
 }
 
