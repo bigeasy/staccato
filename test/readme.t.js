@@ -15,8 +15,8 @@
 // | License:      | MIT                                           |
 
 (async () => {
-    const Duplicitous = require('duplicitous')
-    const socket = new Duplicitous
+    const { Duplex } = require('duplicitous')
+    const socket = new Duplex
     const { Staccato } = require('..')
     const staccato = new Staccato(socket)
 
@@ -114,7 +114,7 @@ require('proof')(19, async okay => {
     // tearing down a server in each test, we're going to use module called Duplicitous
     // which provides a mock duplex stream.
 
-    const Duplex = require('duplicitous')
+    const { Duplex } = require('duplicitous')
 
     // Staccato believes that streams just truncate sometimes. This may or may not be
     // an error that will be reported by the transport. The sender could just close the

@@ -22,8 +22,8 @@ npm install staccato
 ```
 //{ "mode": "code" }
 (async () => {
-    const Duplicitous = require('duplicitous')
-    const socket = new Duplicitous
+    const { Duplex } = require('duplicitous')
+    const socket = new Duplex
     const { Staccato } = require('..')
     //{ "include": "intro" }
 }) ()
@@ -165,7 +165,7 @@ which provides a mock duplex stream.
 
 ```javascript
 //{ "name": "test" }
-const Duplex = require('duplicitous')
+const { Duplex } = require('duplicitous')
 ```
 Staccato believes that streams just truncate sometimes. This may or may not be
 an error that will be reported by the transport. The sender could just close the

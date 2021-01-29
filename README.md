@@ -138,7 +138,7 @@ tearing down a server in each test, we're going to use module called Duplicitous
 which provides a mock duplex stream.
 
 ```javascript
-const Duplex = require('duplicitous')
+const { Duplex } = require('duplicitous')
 ```
 
 Staccato believes that streams just truncate sometimes. This may or may not be
