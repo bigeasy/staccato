@@ -1,5 +1,5 @@
 require('proof')(3, async okay => {
-    const Staccato = require('..')
+    const { Staccato } = require('..')
     const Duplex = require('duplicitous')
     // Readable-only done.
     {
