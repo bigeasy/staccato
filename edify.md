@@ -573,3 +573,42 @@ It will also correctly handle write back-pressure and drain.
     okay(Buffer.concat(gathered).toString(), 'abcdefghi', 'async iterated drained')
 }
 ```
+
+And here at the end I'm going to write some notes to self. I tagged a commit,
+`yet-another-discrepancy` so you can see it. This commit, the one where I add
+this verbiage, and where I've resolved not to be a Node.js stream expert. The
+behavior is still changing. In a Twitter argument I'd probably be told something
+like I was depending on undefined behavior and that the change I made reflect
+the proper use of the API both before and after Node.js 12, that it worked on
+Node.js 14 and Node.js 12 is not a Node.js issue, its a case of a developer who
+didn't read the documentation.
+
+Okay, great. I don't care. I don't want to devote my life to becoming a grand
+master of this particular API. My goal now is to just the buffers off the wire
+and into my application where I know what's going on. I'm cruel. I do major
+version upgrades of my little empire and forget the past. If I can get the
+buffers into internal queues, I can start to manage workload and back-pressure.
+
+I don't go searching NPM for stream modules to use to build Node.js stream
+pipelines. The only one I've ever used is `byline`, which I've moved away from
+because it sends the final, possibly partial and truncated line. I keep writing
+line splitting myself. Other than that, the only thing I'd ever use would be the
+compression streams, so we can accommodate that somehow at some point, but for
+now I'm going to do the right thing and ignore it.
+
+What else is there to add to a pipeline? Encryption? Terminate using `stud` or
+`nginx` or a hosing provider load balancer. But, even within Node.js you use the
+TLS version of the Net interface, you don't pipe through an encryption stream.
+
+I have an `async`/`await` work queue and an `async`/`await` message queue that
+now provides a mechanism for back-pressure. Someday that work queue will use the
+message queue as its internal queue and it will have back-pressure.
+
+There are two socket applications. One is for clients, the other is internal.
+For clients we get into building servers serving thousands of sockets,
+internally it's dozens of sockets handling zillions of messages. I've never
+liked the idea of counting on back-pressure to push back all the way through the
+system. Feel like trying to push a bowling ball with a line of toothpicks. Would
+rather throttle requests at ingress based on application metrics.
+
+And by throttle I mean back-pressure, sure.

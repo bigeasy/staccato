@@ -27,8 +27,9 @@ require('proof')(3, async okay => {
         duplex.on('error', error => console.log(error))
         const staccato = new Staccato(duplex)
 
+        const promise = new Promise(resolve => duplex.output.once('finish', resolve))
         staccato.writable.end()
-        await new Promise(resolve => duplex.output.once('finish', resolve))
+        await promise
         staccato.writable.drain()
 
         okay('drain after finish')
