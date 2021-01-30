@@ -28,7 +28,7 @@
     },
     "devDependencies":
     {
-                            "duplicitous":                  "0.2.5",
+                            "duplicitous":                  "0.2.7",
                             "proof":                        "^9.0.1"
     },
     "scripts":
