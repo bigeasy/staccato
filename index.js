@@ -1,4 +1,4 @@
-const { Interrupt } = require('interrupt')
+const Interrupt = require('interrupt')
 const Future = require('perhaps')
 const once = require('eject')
 const stream = require('stream')
