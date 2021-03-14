@@ -60,15 +60,16 @@ In previous implementations of this library I'd decided that the errors don't
 matter to the application logic, only to the system administrator. We wouldn't
 rely on the errors to determine if communication has been cut. We'd assume that
 socket streams can truncate for any reason, network error, a poorly implemented
-client, or an attack. Our protocol do not need an error message on read. They
+client, or an attack. Our protocol does not need an error message on read. They
 can verify the contents of the messages which they ought to do anyway. On error,
 a read will just return `null` on the next read. Errors are funneled off to a
 logging mechanism.
 
 Read loops break when you get a `null` buffer as end-of-stream indicator, but
-you used to have to test for write failure. I'd like to see if I can remove the
-conditional and replace it with `try`/`catch`, not for general socket errors,
-but for the specific error of write-after-finish.
+you used to have to test for write failure. I'd like to see (okay, looks like
+you did it, maybe fix this paragraph?) if I can remove the conditional and
+replace it with `try`/`catch`, not for general socket errors, but for the
+specific error of write-after-finish.
 
 Therefore, input streams truncate. That's just the way the cookie crumbles.
 Write streams close too, and when they do you get an exception.
