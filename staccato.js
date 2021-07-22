@@ -1,6 +1,6 @@
 const Interrupt = require('interrupt')
 const { Future } = require('perhaps')
-const once = require('eject')
+const { once } = require('eject')
 const stream = require('stream')
 const events = require('events')
 
