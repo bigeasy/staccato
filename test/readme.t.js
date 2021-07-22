@@ -17,7 +17,7 @@
 (async () => {
     const { Duplex } = require('duplicitous')
     const socket = new Duplex
-    const { Staccato } = require('..')
+    const Staccato = require('..')
     const staccato = new Staccato(socket)
 
     socket.on('error', error => console.log(error.stack))
@@ -116,7 +116,7 @@
 // generally looks like this.
 
 require('proof')(19, async okay => {
-    const { Staccato } = require('..')
+    const Staccato = require('..')
 
     // Staccato was indented for use primarily with sockets which is a duplex stream,
     // so our examples are going use a duplex stream. Rather than setting up and

@@ -24,7 +24,7 @@ npm install staccato
 (async () => {
     const { Duplex } = require('duplicitous')
     const socket = new Duplex
-    const { Staccato } = require('..')
+    const Staccato = require('..')
     //{ "include": "intro" }
 }) ()
 ```
@@ -159,12 +159,12 @@ The `'staccato'` module exports a single `Staccato` object.
 
 ```javascript
 //{ "mode": "text" }
-const { Staccato } = require('staccato')
+const Staccato = require('staccato')
 ```
 
 ```javascript
 //{ "name": "test", "mode": "code" }
-const { Staccato } = require('..')
+const Staccato = require('..')
 ```
 
 Staccato was indented for use primarily with sockets which is a duplex stream,

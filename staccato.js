@@ -251,4 +251,4 @@ class Staccato extends events.EventEmitter {
     }
 }
 
-exports.Staccato = Staccato
+module.exports = Staccato

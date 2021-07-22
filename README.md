@@ -138,7 +138,7 @@ node test/readme.t.js
 The `'staccato'` module exports a single `Staccato` object.
 
 ```javascript
-const { Staccato } = require('staccato')
+const Staccato = require('staccato')
 ```
 
 Staccato was indented for use primarily with sockets which is a duplex stream,
