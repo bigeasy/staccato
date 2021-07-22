@@ -21,7 +21,6 @@
     },
     "dependencies":
     {
-                            "comeuppance":                  "0.0.1",
                             "eject":                        "0.2.3",
                             "interrupt":                    "11.0.0-alpha.20",
                             "perhaps":                      "0.0.10"
