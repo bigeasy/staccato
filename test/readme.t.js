@@ -35,31 +35,37 @@
 // `async`/`await` interface to sockets. This is it.
 //
 // The problem with an `async`/`await` interface to sockets is that the errors
-// emitted by the socket to not map to exceptions. Sockets can emit multiple errors
-// but a catch block will only catch a single exception.
+// emitted by the socket do not map to exceptions. Sockets can emit multiple
+// errors. A catch block is designed to catch a single error and move on. You have
+// to leave an error handler registered to ensure you do not crash with an
+// `unhandledException` and then if the user excpects to catch errors in a catch
+// block, where does this dangling error go?
 //
 // Early attempts to re-route error events to error-first callbacks had the problem
 // of these dangling errors. Additionally, there was the problem of which half of
-// the socket should get the error, the reader, the writer, or whoever got there
-// first?
+// the socket should get the error? Should it be the reader? Should it be the
+// writer? Should it be whichever checked for the error first?
 //
-// In previous implementations of this library I'd decided that the errors don't
-// matter to the application logic, only to the system administrator. We wouldn't
-// rely on the errors to determine if communication has been cut. We'd assume that
-// socket streams can truncate for any reason, network error, a poorly implemented
-// client, or an attack. Our protocol does not need an error message on read. They
-// can verify the contents of the messages which they ought to do anyway. On error,
-// a read will just return `null` on the next read. Errors are funneled off to a
-// logging mechanism.
+// In previous implementations of this library I'd decided that the specific
+// network errors don't matter to the application logic, only to the system
+// administrator. We shouldn't rely on the errors to determine if communication has
+// been cut. We'd assume that socket streams can truncate for any reason, network
+// error, a poorly implemented client closing the socket early, or an attack. Our
+// protocol does not need an error message on read. They ought to be verifying the
+// contents of the messages with checksums and whatnot. A bad network connection is
+// one of many possible causes of data corruption. On error, a read will just
+// return `null` on the next read and the application can deal with the truncation.
+// Errors are funneled off to a logging mechanism for the administrators to
+// inspect.
 //
-// Read loops break when you get a `null` buffer as end-of-stream indicator, but
-// you used to have to test for write failure. I'd like to see (okay, looks like
-// you did it, maybe fix this paragraph?) if I can remove the conditional and
-// replace it with `try`/`catch`, not for general socket errors, but for the
-// specific error of write-after-finish.
+// Read loops break when you get a `null` buffer as end-of-stream indicator.
+//
+// Writes on the other hand do produce an exception if the socket closes, but not a
+// network exception. They simply throw a write-after-finish if you attempt to
+// write to the socket after it has closed for any reason.
 //
 // Therefore, input streams truncate. That's just the way the cookie crumbles.
-// Write streams close too, and when they do you get an exception.
+// Write streams can close prematurely too, and when they do you get an exception.
 //
 // When there is only one exception to catch we can provide a wrapper function that
 // will filter that exception and wave it through. This is `Socket.rescue()`.
@@ -72,12 +78,14 @@
 // In addition to providing the simplified interface above, Staccato captures some
 // of the fiddly bits of Node.js socket handling.
 //
-// The documentation says that when `write` returns `false` you're supposed to wait
-// for a `"drain"` event before continuing to `write`. Staccato will do this for
-// you in the `write` method. The documentation for `write` does not mention that
-// `write` will also return false when an error destroys the stream. When the
-// stream is destroyed there will be no `"drain"` event so waiting on a drain will
-// cause the program to hang. Staccato encapsulates the drain-or-error logic.
+// Fun fact about Node.js streams. The documentation says that when `write` returns
+// `false` you're supposed to wait for a `"drain"` event before continuing to
+// `write`. Staccato will do this for you in the `write` method. The documentation
+// for `write` does not mention that `write` will also return false when an error
+// destroys the stream. When the stream is destroyed there will be no `"drain"`
+// event so waiting on a drain after write returns `false` because of a destroyed
+// socket will cause the program to hang. Big mystery when it happens, too. A real
+// whodunnit. Staccato encapsulates the drain-or-error logic.
 //
 // Both `end` and `finish` are so fiddly there's now a
 // [`stream.finished`](https://nodejs.org/api/stream.html#stream_stream_finished_stream_options_callback)
@@ -85,11 +93,11 @@
 // not a socket has really ended or finished honest and for true. If you read the
 // source for this function it is full of caveats, exceptions and reports from the
 // field. Staccato employs this function and pulls some of the logic into Staccato.
-// (Nice to have this function. I'm glad I wasn't imagining things.)
 //
 // Furthermore, this function leaves its handlers registered by default to deal
-// with the dangling error problem that, again, I'm glad it wasn't just my
-// imagination.
+// with the dangling error problem. I'm glad it wasn't just my imagination. We
+// don't use this error handler, though. We insist that you register your own
+// network error handler on your socket to log or ignore all network errors.
 //
 // Oh, yes. There is now an `async`/`await` interface to `stream.Readable`, I know.
 // But it went from not raising an exception to raising an exception between
@@ -97,8 +105,8 @@
 // problem of dangling errors unresolved, and doesn't settle the question as to
 // what to do with the write side when the socket errors.
 //
-// Currently an alpha implementation as I walk though my code replacing the older
-// Staccato with Staccato 13.
+// Staccato is currently an alpha implementation as I walk though my code replacing
+// the older Staccato 12.x with Staccato 13.x.
 //
 // ## Usage
 //
