@@ -23,7 +23,7 @@
     {
                             "eject":                        "0.3.0",
                             "interrupt":                    "11.0.0-alpha.24",
-                            "perhaps":                      "0.0.11"
+                            "perhaps":                      "0.0.12"
     },
     "devDependencies":
     {
