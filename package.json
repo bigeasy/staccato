@@ -21,7 +21,7 @@
     },
     "dependencies":
     {
-                            "eject":                        "0.3.1",
+                            "eject":                        "0.3.2",
                             "interrupt":                    "11.0.0-alpha.25",
                             "perhaps":                      "0.0.13"
     },
