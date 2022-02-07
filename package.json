@@ -27,7 +27,7 @@
     },
     "devDependencies":
     {
-                            "duplicitous":                  "0.2.10",
+                            "duplicitous":                  "0.2.11",
                             "proof":                        "^9.0.1"
     },
     "main":                 "staccato",
